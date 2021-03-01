@@ -43,7 +43,6 @@ class WorkoutController extends Controller
                 'name' => 'required',
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
-                'day' => 'required|exists:day,id',
                 'start_time' => 'required',
                 'end_time' => 'required'
             ]
@@ -52,7 +51,6 @@ class WorkoutController extends Controller
         $workout = new Workout();
         $workout->user_id = Auth::id();
         $workout->name = $request->name;
-        $workout->day_id = $request->day;
         $workout->start_date = $request->start_date;
         $workout->end_date = $request->end_date;
         $workout->start_time = $request->start_time;

@@ -20,7 +20,6 @@ Route::middleware('auth')->group(function(){
 
     Route::resource('workout', \App\Http\Controllers\Workout\WorkoutController::class);
     Route::resource('workout.exercise', \App\Http\Controllers\Workout\ExerciseController::class);
-
     Route::resource('exercise', \App\Http\Controllers\Exercise\ExerciseController::class);
 
 });

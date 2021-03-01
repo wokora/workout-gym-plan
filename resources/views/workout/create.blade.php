@@ -38,19 +38,6 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label>Day</label>
-                                <select name="day" id="day" class="form-control @error('day') is-invalid @enderror">
-                                    <option value>Select Workout Day</option>
-                                    @foreach(\App\Models\Day\Day::get() as $day)
-                                        <option value="{{ $day->id }}" @if( old('day', '') == $day->id  ) selected @endif>{{ $day->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('day')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
                             <div class="form-row">
                                 <div class="col">
                                     <div class="form-group">
