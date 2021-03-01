@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Workout\Workout;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -40,4 +41,12 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    protected $table = 'user';
+
+
+
+    public function workout(){
+        return $this->hasMany(Workout::class, 'user_id');
+    }
 }

@@ -15,15 +15,18 @@ class CreateWorkoutTable extends Migration
     {
         Schema::create('workout', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('day_id');
-            $table->date('from_date');
-            $table->date('to_date');
+            $table->string('name');
+            $table->date('start_date');
+            $table->date('end_date');
             $table->time('start_time');
             $table->time('end_time');
             $table->timestamps();
             $table->softDeletes();
+
+            $table->foreign('user_id')->references('id')->on('user')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('day_id')->references('id')->on('day')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

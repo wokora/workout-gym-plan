@@ -16,9 +16,12 @@ class CreateExerciseBodySectionTable extends Migration
         Schema::create('exercise_body_section', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('exercise_id');
-            $table->unsignedBigInteger('dody_section_id');
+            $table->unsignedBigInteger('body_section_id');
             $table->timestamps();
             $table->softDeletes();
+
+            $table->foreign('exercise_id')->references('id')->on('exercise')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('body_section_id')->references('id')->on('body_section')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

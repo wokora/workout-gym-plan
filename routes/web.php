@@ -13,6 +13,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Auth::routes();
+
+Route::middleware('auth')->group(function(){
+    Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('index');
+
+    Route::resource('workout', \App\Http\Controllers\Workout\WorkoutController::class);
+    Route::resource('workout.exercise', \App\Http\Controllers\Workout\ExerciseController::class);
+
+    Route::resource('exercise', \App\Http\Controllers\Exercise\ExerciseController::class);
+
 });
+

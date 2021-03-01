@@ -21,6 +21,9 @@ class CreateWorkoutExerciseTable extends Migration
             $table->integer('reps');
             $table->timestamps();
             $table->softDeletes();
+
+            $table->foreign('workout_id')->references('id')->on('workout')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('exercise_id')->references('id')->on('exercise')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 
