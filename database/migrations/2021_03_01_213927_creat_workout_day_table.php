@@ -17,12 +17,13 @@ class CreatWorkoutDayTable extends Migration
             $table->id();
             $table->unsignedBigInteger('day_id');
             $table->unsignedBigInteger('workout_id');
+            $table->integer('number');
             $table->string('description')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
             $table->foreign('day_id')->references('id')->on('day')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('exercise_id')->references('id')->on('exercise')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('workout_id')->references('id')->on('workout')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

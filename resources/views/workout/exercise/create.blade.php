@@ -7,7 +7,7 @@
                 <div class="card">
                     <div class="card-header">Create Workout Exercise</div>
 
-                    <form action="{{ route('workout.exercise.store', ['workout' => $workout->id]) }}" method="post">
+                    <form action="{{ route('workout.day.exercise.store', [$workout->id, $day->id]) }}" method="post">
                         @csrf
                         <div class="card-body">
 

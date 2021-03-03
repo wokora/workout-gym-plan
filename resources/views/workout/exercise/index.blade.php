@@ -4,7 +4,7 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <a href="{{ route('workout.exercise.create', [$workout->id]) }}" class="btn btn-outline-primary btn-block mb-3">Create <strong>{{ $workout->name }}</strong> Exercise</a>
+                <a href="{{ route('workout.exercise.create', [$workout->id, $day->id]) }}" class="btn btn-outline-primary btn-block mb-3">Create <strong>{{ $workout->name }}</strong> Exercise</a>
                 <div class="card">
                     <div class="card-header">All Exercises</div>
 

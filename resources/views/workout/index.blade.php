@@ -10,7 +10,7 @@
 
                     <div class="list-group list-group-flush">
                         @foreach( \App\Models\Workout\Workout::get() as $workout )
-                            <a href="{{ route('workout.show', $workout->id) }}" class="list-group-item list-group-item-action">{{ $workout->name }}</a>
+                            <a href="{{ route('workout.show', $workout->id) }}" class="list-group-item list-group-item-action">{{ $workout->name }} </a>
                         @endforeach
                     </div>
                 </div>

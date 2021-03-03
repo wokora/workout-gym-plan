@@ -17,11 +17,16 @@ class CreatWorkoutDayExerciseTable extends Migration
             $table->id();
             $table->unsignedBigInteger('workout_day_id');
             $table->unsignedBigInteger('exercise_id');
+            $table->integer('number');
             $table->integer('sets');
             $table->integer('reps');
             $table->string('description')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+
+            $table->foreign('workout_day_id')->references('id')->on('workout_day')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('exercise_id')->references('id')->on('exercise')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

@@ -7,7 +7,7 @@
                 <div class="card">
                     <div class="card-header">Manage Workout Exercise</div>
 
-                    <form action="{{ route('workout.day.exercise.update', [$workout_exercise->workout_day->workout->id, $workout_exercise->workout_day->id, $workout_exercise->id]) }}" method="post">
+                    <form action="{{ route('workout.exercise.update', [$workout_exercise->workout->id, $workout_exercise->id]) }}" method="post">
                         <input type="hidden" name="_method" value="patch" />
                         @csrf
                         <div class="card-body">

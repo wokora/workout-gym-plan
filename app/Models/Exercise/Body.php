@@ -6,13 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Exercise extends Model
+class Body extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'exercise';
+    protected $table = 'exercise_body_section';
 
-    public function body_section(){
-        return $this->hasMany(Body::class, 'exercise_id');
-    }
+    protected $fillable = ['body_section_id'];
 }

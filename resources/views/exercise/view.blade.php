@@ -4,10 +4,12 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
+                <a href="{{ route('exercise.create') }}" class="btn btn-outline-primary btn-block mb-3">Create Exercise</a>
                 <div class="card">
                     <div class="card-header">Update Exercise</div>
 
-                    <form action="{{ route('exercise.store') }}" method="post">
+                    <form action="{{ route('exercise.update', $exercise->id) }}" method="post">
+                        <input type="hidden" name="_method" value="patch" />
                         @csrf
                         <div class="card-body">
 
@@ -25,6 +27,16 @@
                                 @error('description')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                            </div>
+
+                            <div class="form-group">
+                                <label>Target body sections</label>
+                                @foreach(\App\Models\Body\Body::get() as $body)
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="{{ $body->id }}" name="body[{{ $body->id }}]" @if( $exercise->body_section()->where('body_section_id', $body->id)->count() > 0 ) checked @endif class="custom-control-input" id="customCheck{{ $body->id }}">
+                                        <label class="custom-control-label" for="customCheck{{ $body->id }}">{{ $body->name }}</label>
+                                    </div>
+                                @endforeach
                             </div>
 
 

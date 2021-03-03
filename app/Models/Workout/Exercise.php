@@ -10,12 +10,16 @@ class Exercise extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'workout_exercise';
+    protected $table = 'workout_day_exercise';
 
-    protected $fillable = ['exercise_id','sets','reps'];
+    protected $fillable = ['exercise_id' ,'number','sets','reps'];
 
     public function workout(){
         return $this->belongsTo(Workout::class, 'workout_id');
+    }
+
+    public function workout_day(){
+        return $this->belongsTo(\App\Models\Workout\Day::class, 'workout_day_id');
     }
 
     public function exercise(){

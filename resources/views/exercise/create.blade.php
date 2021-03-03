@@ -27,6 +27,16 @@
                                 @enderror
                             </div>
 
+                            <div class="form-group">
+                                <label>Target body sections</label>
+                                @foreach(\App\Models\Body\Body::get() as $body)
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" value="{{ $body->id }}" name="body[{{ $body->id }}]" class="custom-control-input" id="customCheck{{ $body->id }}">
+                                        <label class="custom-control-label" for="customCheck{{ $body->id }}">{{ $body->name }}</label>
+                                    </div>
+                                @endforeach
+                            </div>
+
 
                         </div>
                         <div class="card-footer text-right">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Workout;
 
 use App\Http\Controllers\Controller;
+use App\Models\Workout\Day;
 use App\Models\Workout\Exercise;
 use App\Models\Workout\Workout;
 use Illuminate\Http\Request;
@@ -15,9 +16,9 @@ class ExerciseController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Workout $workout)
+    public function index(Workout $workout, Day $day)
     {
-        return view('workout.exercise.index', ['workout' => $workout]);
+        return view('workout.exercise.index', ['workout' => $workout, 'day' => $day] );
     }
 
     /**
@@ -25,9 +26,9 @@ class ExerciseController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(Workout $workout)
+    public function create(Workout $workout, Day $day)
     {
-        return view('workout.exercise.create', ['workout' => $workout]);
+        return view('workout.exercise.create', ['workout' => $workout, 'day' => $day]);
     }
 
     /**
@@ -36,27 +37,30 @@ class ExerciseController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, Workout $workout)
+    public function store(Request $request, Workout $workout, Day $day)
     {
 
         Validator::make($request->all(),
             [
-                'exercise' => 'required|exists:exercise,id|unique:workout_exercise,exercise_id,NULL,id,workout_id,'.$workout->id,
+                'exercise' => 'required|exists:exercise,id|unique:workout_day_exercise,exercise_id,NULL,id,workout_day_id,'.$day->id,
                 'sets' => 'required|numeric|min:1',
                 'reps' => 'required|numeric|min:1',
             ],
             [
-                'exercise.unique' => 'You already have this exercise in the workout'
+                'exercise.unique' => 'You already have this exercise in the day workout'
             ]
         )->validate();
 
-        $workout_excercise = $workout->workout_exercise()->create([
+        $workout_excercise_count = $day->workout_exercise()->count();
+
+        $workout_excercise = $day->workout_exercise()->create([
             'exercise_id' => $request->exercise,
+            'number' => $workout_excercise_count + 1,
             'sets' => $request->sets,
             'reps' => $request->reps
         ]);
 
-        return redirect()->route('workout.exercise.show', [$workout->id, $workout_excercise->id])->with('success', 'Workout Created');
+        return redirect()->route('workout.day.exercise.show', [$workout->id, $day->id, $workout_excercise->id])->with('success', 'Workout Created');
     }
 
     /**
@@ -65,7 +69,7 @@ class ExerciseController extends Controller
      * @param  \App\Models\Workout\Exercise  $exercise
      * @return \Illuminate\Http\Response
      */
-    public function show(Workout $workout, Exercise $exercise)
+    public function show(Workout $workout, Day $day, Exercise $exercise)
     {
         return view('workout.exercise.view', ['workout_exercise' => $exercise]);
     }
@@ -88,11 +92,11 @@ class ExerciseController extends Controller
      * @param  \App\Models\Workout\Exercise  $exercise
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Workout $workout, Exercise $exercise)
+    public function update(Request $request, Workout $workout, Day $day, Exercise $exercise)
     {
         Validator::make($request->all(),
             [
-                'exercise' => 'required|exists:exercise,id|unique:workout_exercise,exercise_id,'.$exercise->id.',id,workout_id,'.$workout->id,
+                'exercise' => 'required|exists:exercise,id|unique:workout_day_exercise,exercise_id,'.$exercise->id.',id,workout_day_id,'.$workout->id,
                 'sets' => 'required|numeric|min:1',
                 'reps' => 'required|numeric|min:1',
             ],
@@ -106,7 +110,7 @@ class ExerciseController extends Controller
         $exercise->reps = $request->reps;
         $exercise->save();
 
-        return redirect()->route('workout.exercise.show', [$workout->id, $exercise->id])->with('success', 'Workout Updates');
+        return redirect()->route('workout.day.exercise.show', [$workout->id, $day->id, $exercise->id])->with('success', 'Workout Updates');
     }
 
     /**

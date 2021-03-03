@@ -49,6 +49,13 @@ class ExerciseController extends Controller
         $exercise->description = $request->description;
         $exercise->save();
 
+        foreach ($request->body as $body){
+
+            $exercise->body_section()->create([
+                'body_section_id' => $body
+            ]);
+        }
+
         return redirect()->route('exercise.show', $exercise->id)->with('success', 'Exercise Created');
     }
 
@@ -83,7 +90,27 @@ class ExerciseController extends Controller
      */
     public function update(Request $request, Exercise $exercise)
     {
-        //
+        Validator::make($request->all(),
+            [
+                'name' => 'required|unique:exercise,name,'.$exercise->id,
+                'description' => 'nullable|max:255'
+            ]
+        )->validate();
+
+        $exercise->name = $request->name;
+        $exercise->description = $request->description;
+        $exercise->save();
+
+        $exercise->body_section()->delete();
+
+        foreach ($request->body as $body){
+
+            $exercise->body_section()->create([
+                'body_section_id' => $body
+            ]);
+        }
+
+        return redirect()->route('exercise.show', $exercise->id)->with('success', 'Exercise Updated');
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Workout;
 
 use App\Http\Controllers\Controller;
+use App\Models\Day\Day;
 use App\Models\Workout\Workout;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -44,7 +45,8 @@ class WorkoutController extends Controller
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after:start_date',
                 'start_time' => 'required',
-                'end_time' => 'required'
+                'end_time' => 'required',
+                'day' => 'required|array'
             ]
         )->validate();
 
@@ -56,6 +58,15 @@ class WorkoutController extends Controller
         $workout->start_time = $request->start_time;
         $workout->end_time = $request->end_time;
         $workout->save();
+
+        foreach ($request->day as $day){
+            $day = Day::find($day);
+            $workout->workout_day()->create([
+                'day_id' => $day->id,
+                'number' => $day->number
+            ]);
+        }
+
 
         return redirect()->route('workout.show', $workout->id)->with('success', 'Workout Created');
     }
@@ -79,7 +90,7 @@ class WorkoutController extends Controller
      */
     public function edit(Workout $workout)
     {
-        //
+        return view('workout.edit', ['workout' => $workout]);
     }
 
     /**
@@ -103,12 +114,22 @@ class WorkoutController extends Controller
         )->validate();
 
         $workout->name = $request->name;
-        $workout->day_id = $request->day;
         $workout->start_date = $request->start_date;
         $workout->end_date = $request->end_date;
         $workout->start_time = $request->start_time;
         $workout->end_time = $request->end_time;
         $workout->save();
+
+        $workout->workout_day()->whereNotIn('day_id', $request->day)->delete();
+
+        foreach ($request->day as $day){
+
+            if( $workout->workout_day()->where('day_id', $day)->count() == 0){
+                $day = Day::find($day);
+                $workout->workout_day()->create(['day_id' => $day->id, 'number' => $day->number]);
+            }
+
+        }
 
         return redirect()->route('workout.show', $workout->id)->with('success', 'Workout Created');
     }

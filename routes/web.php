@@ -19,8 +19,9 @@ Route::middleware('auth')->group(function(){
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('index');
 
     Route::resource('workout', \App\Http\Controllers\Workout\WorkoutController::class);
-    Route::resource('workout.exercise', \App\Http\Controllers\Workout\ExerciseController::class);
+    Route::resource('workout.day', \App\Http\Controllers\Workout\DayController::class);
+    Route::resource('workout.day.exercise', \App\Http\Controllers\Workout\ExerciseController::class);
     Route::resource('exercise', \App\Http\Controllers\Exercise\ExerciseController::class);
-
+    Route::resource('body', \App\Http\Controllers\Body\BodyController::class);
 });
 
