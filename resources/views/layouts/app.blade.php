@@ -42,6 +42,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('body.index') }}">Body Section</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('vital.index') }}">Vitals</a>
+                        </li>
 
                     </ul>
 
@@ -85,9 +88,9 @@
         </nav>
 
         <main class="py-4">
-            @if (session('status'))
+            @if (session('success'))
                 <div class="alert alert-success pb-3" role="alert">
-                    {{ session('status') }}
+                    {{ session('success') }}
                 </div>
             @endif
             @yield('content')

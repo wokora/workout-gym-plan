@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Vital\Vital;
 use App\Models\Workout\Workout;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,5 +49,9 @@ class User extends Authenticatable
 
     public function workout(){
         return $this->hasMany(Workout::class, 'user_id');
+    }
+
+    public function vitals(){
+        return $this->hasMany(Vital::class, 'user_id');
     }
 }

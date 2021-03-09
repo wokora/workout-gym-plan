@@ -23,5 +23,6 @@ Route::middleware('auth')->group(function(){
     Route::resource('workout.day.exercise', \App\Http\Controllers\Workout\ExerciseController::class);
     Route::resource('exercise', \App\Http\Controllers\Exercise\ExerciseController::class);
     Route::resource('body', \App\Http\Controllers\Body\BodyController::class);
+    Route::resource('vital', \App\Http\Controllers\Vital\VitalController::class);
 });
 
