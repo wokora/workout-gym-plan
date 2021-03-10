@@ -44,7 +44,6 @@
                             <tr class="table-{{ $class }}">
                                 <td>{{ $date_measured->format('d F, Y') }}</td>
                                 <td>{{ $vital->weight }}</td>
-                                <td>{{ $bmi }}</td>
                                 <td align="right">
                                     <a href="{{ route('vital.show', $vital->id) }}">View</a>
                                 </td>
