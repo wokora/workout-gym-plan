@@ -49,11 +49,13 @@ class ExerciseController extends Controller
         $exercise->description = $request->description;
         $exercise->save();
 
-        foreach ($request->body as $body){
+        if($request->body) {
+            foreach ($request->body as $body) {
 
-            $exercise->body_section()->create([
-                'body_section_id' => $body
-            ]);
+                $exercise->body_section()->create([
+                    'body_section_id' => $body
+                ]);
+            }
         }
 
         return redirect()->route('exercise.show', $exercise->id)->with('success', 'Exercise Created');
@@ -103,11 +105,13 @@ class ExerciseController extends Controller
 
         $exercise->body_section()->delete();
 
-        foreach ($request->body as $body){
+        if($request->body) {
+            foreach ($request->body as $body) {
 
-            $exercise->body_section()->create([
-                'body_section_id' => $body
-            ]);
+                $exercise->body_section()->create([
+                    'body_section_id' => $body
+                ]);
+            }
         }
 
         return redirect()->route('exercise.show', $exercise->id)->with('success', 'Exercise Updated');

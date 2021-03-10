@@ -59,12 +59,15 @@ class WorkoutController extends Controller
         $workout->end_time = $request->end_time;
         $workout->save();
 
-        foreach ($request->day as $day){
-            $day = Day::find($day);
-            $workout->workout_day()->create([
-                'day_id' => $day->id,
-                'number' => $day->number
-            ]);
+        if($request->day) {
+
+            foreach ($request->day as $day) {
+                $day = Day::find($day);
+                $workout->workout_day()->create([
+                    'day_id' => $day->id,
+                    'number' => $day->number
+                ]);
+            }
         }
 
 
@@ -122,13 +125,16 @@ class WorkoutController extends Controller
 
         $workout->workout_day()->whereNotIn('day_id', $request->day)->delete();
 
-        foreach ($request->day as $day){
+        if($request->day) {
 
-            if( $workout->workout_day()->where('day_id', $day)->count() == 0){
-                $day = Day::find($day);
-                $workout->workout_day()->create(['day_id' => $day->id, 'number' => $day->number]);
+            foreach ($request->day as $day) {
+
+                if ($workout->workout_day()->where('day_id', $day)->count() == 0) {
+                    $day = Day::find($day);
+                    $workout->workout_day()->create(['day_id' => $day->id, 'number' => $day->number]);
+                }
+
             }
-
         }
 
         return redirect()->route('workout.show', $workout->id)->with('success', 'Workout Created');

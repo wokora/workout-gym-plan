@@ -45,7 +45,7 @@
 
                                 <div class="col">
                                     <div class="form-group">
-                                        <label>Height</label>
+                                        <label>Height (CM)</label>
                                         <input type="number" step="any" name="height" value="{{ old('height', $height) }}" id="name" class="form-control @error('height') is-invalid @enderror" placeholder="Height">
                                         @error('height')
                                             <div class="invalid-feedback">{{ $message }}</div>

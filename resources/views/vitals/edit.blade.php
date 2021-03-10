@@ -21,15 +21,7 @@
                             </div>
 
                             <div class="form-row">
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label>Height</label>
-                                        <input type="number" step="any" name="height" value="{{ old('height', $vital->height) }}" id="name" class="form-control @error('height') is-invalid @enderror" placeholder="Height">
-                                        @error('height')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
+
                                 <div class="col">
                                     <div class="form-group">
                                         <label>Weight</label>
@@ -39,6 +31,17 @@
                                         @enderror
                                     </div>
                                 </div>
+
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label>Height (CM)</label>
+                                        <input type="number" step="any" name="height" value="{{ old('height', $vital->height) }}" id="name" class="form-control @error('height') is-invalid @enderror" placeholder="Height">
+                                        @error('height')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
                             </div>
 
                         </div>
