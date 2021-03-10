@@ -5,10 +5,11 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <a href="{{ route('body.create') }}" class="btn btn-outline-primary btn-block mb-3">Add Body Section</a>
-                <div class="card">
+                <div class="card mb-3">
                     <div class="card-header">Create Body Section</div>
 
-                    <form action="{{ route('body.edit', $body->id) }}" method="post">
+                    <form action="{{ route('body.update', $body->id) }}" method="post">
+                        <input type="hidden" name="_method" value="patch" />
                         @csrf
                         <div class="card-body">
 
@@ -37,6 +38,12 @@
 
 
                 </div>
+
+                <form action="{{ route('body.destroy', $body->id) }}" method="post">
+                    @csrf
+                    <input type="hidden" name="_method" value="delete" />
+                    <button type="submit" class="btn btn-outline-danger btn-block">Delete</button>
+                </form>
             </div>
         </div>
     </div>

@@ -87,12 +87,15 @@
             </div>
         </nav>
 
-        <main class="py-4">
-            @if (session('success'))
-                <div class="alert alert-success pb-3" role="alert">
+        @if (session('success'))
+            <div class="alert alert-success m-0" role="alert">
+                <div class="container text-center text-uppercase">
                     {{ session('success') }}
                 </div>
-            @endif
+            </div>
+        @endif
+
+        <main class="py-3">
             @yield('content')
         </main>
     </div>

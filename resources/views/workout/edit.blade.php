@@ -5,7 +5,7 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <a href="{{ route('workout.show', $workout->id) }}" class="btn btn-outline-primary btn-block mb-3 text-uppercase">Workout</a>
-                <div class="card">
+                <div class="card mb-3">
                     <div class="card-header">Update Workout</div>
 
                     <form action="{{ route('workout.update', $workout->id) }}" method="post">
@@ -76,8 +76,13 @@
                         </div>
                     </form>
 
-
                 </div>
+
+                <form action="{{ route('workout.destroy', $workout->id) }}" method="post">
+                    @csrf
+                    <input type="hidden" name="_method" value="delete" />
+                    <button type="submit" class="btn btn-outline-danger btn-block">Delete</button>
+                </form>
             </div>
         </div>
     </div>

@@ -27,7 +27,7 @@ class DayTableSeeder extends Seeder
         foreach ($days as $key => $day){
             $new = new Day();
             $new->name = $day;
-            $new->number = $key + 1;
+            $new->number = $key;
             $new->save();
         }
 

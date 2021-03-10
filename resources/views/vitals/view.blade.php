@@ -8,16 +8,6 @@
 
                 <div class="card">
 
-
-                    <div class="card-footer text-right">
-                        <form action="{{ route('vital.destroy', $vital->id) }}" method="post">
-                            @csrf
-                            <input type="hidden" name="_method" value="delete" />
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
-                    </div>
-
-
                 </div>
 
 

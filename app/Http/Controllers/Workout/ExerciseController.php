@@ -80,9 +80,9 @@ class ExerciseController extends Controller
      * @param  \App\Models\Workout\Exercise  $exercise
      * @return \Illuminate\Http\Response
      */
-    public function edit(Workout $workout, Exercise $exercise)
+    public function edit(Workout $workout, Day $day, Exercise $exercise)
     {
-        return view('workout.exercise.view', ['workout_exercise' => $exercise]);
+        return view('workout.exercise.edit', ['workout_exercise' => $exercise]);
     }
 
     /**
@@ -119,8 +119,10 @@ class ExerciseController extends Controller
      * @param  \App\Models\Workout\Exercise  $exercise
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Exercise $exercise)
+    public function destroy(Workout $workout, Day $day, Exercise $exercise)
     {
-        //
+        $exercise->delete();
+
+        return redirect()->route('workout.day.show', [$workout->id, $day->id])->with('success', 'Workout Exercise Deleted');;
     }
 }

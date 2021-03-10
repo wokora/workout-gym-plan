@@ -78,7 +78,7 @@ class ExerciseController extends Controller
      */
     public function edit(Exercise $exercise)
     {
-        //
+        return view('exercise.edit', ['exercise' => $exercise]);
     }
 
     /**
@@ -121,6 +121,8 @@ class ExerciseController extends Controller
      */
     public function destroy(Exercise $exercise)
     {
-        //
+        $exercise->delete();
+
+        return redirect()->route('exercise.index')->with('success', 'Exercise Deleted');
     }
 }

@@ -4,10 +4,10 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="card">
+                <div class="card mb-3">
                     <div class="card-header">Manage Workout Exercise</div>
 
-                    <form action="{{ route('workout.exercise.update', [$workout_exercise->workout->id, $workout_exercise->id]) }}" method="post">
+                    <form action="{{ route('workout.day.exercise.update', [$workout_exercise->workout_day->workout->id, $workout_exercise->workout_day->id, $workout_exercise->id]) }}" method="post">
                         <input type="hidden" name="_method" value="patch" />
                         @csrf
                         <div class="card-body">
@@ -53,6 +53,12 @@
 
 
                 </div>
+
+                <form action="{{ route('workout.day.exercise.destroy', [$workout_exercise->workout_day->workout->id, $workout_exercise->workout_day->id, $workout_exercise->id]) }}" method="post">
+                    @csrf
+                    <input type="hidden" name="_method" value="delete" />
+                    <button type="submit" class="btn btn-outline-danger btn-block">Delete</button>
+                </form>
             </div>
         </div>
     </div>

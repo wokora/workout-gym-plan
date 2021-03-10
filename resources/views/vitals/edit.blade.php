@@ -4,7 +4,7 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="card">
+                <div class="card mb-3">
                     <div class="card-header">Record Vital</div>
 
                     <form action="{{ route('vital.update', [$vital->id]) }}" method="post">
@@ -49,6 +49,12 @@
 
 
                 </div>
+
+                <form action="{{ route('vital.destroy', $vital->id) }}" method="post">
+                    @csrf
+                    <input type="hidden" name="_method" value="delete" />
+                    <button type="submit" class="btn btn-outline-danger btn-block">Delete</button>
+                </form>
             </div>
         </div>
     </div>

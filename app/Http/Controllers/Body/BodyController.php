@@ -60,7 +60,7 @@ class BodyController extends Controller
      */
     public function show(Body $body)
     {
-        return view('body.edit', ['body' => $body]);
+        return view('body.view', ['body' => $body]);
     }
 
     /**
@@ -71,7 +71,7 @@ class BodyController extends Controller
      */
     public function edit(Body $body)
     {
-        //
+        return view('body.edit', ['body' => $body]);
     }
 
     /**
@@ -83,7 +83,18 @@ class BodyController extends Controller
      */
     public function update(Request $request, Body $body)
     {
-        //
+        Validator::make($request->all(),
+            [
+                'name' => 'required|unique:body_section,name,'.$body->id,
+                'description' => 'nullable|max:255'
+            ]
+        )->validate();
+
+        $body->name = $request->name;
+        $body->description = $request->description;
+        $body->save();
+
+        return redirect()->route('body.show', $body->id)->with('success', 'Body section updated');
     }
 
     /**

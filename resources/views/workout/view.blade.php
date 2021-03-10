@@ -10,7 +10,7 @@
 
                     <div class="list-group list-group-flush">
                         @foreach( $workout->workout_day()->orderBy('number', 'ASC')->get() as $workout_day )
-                            <a href="{{ route('workout.day.show', [$workout->id, $workout_day->id]) }}" class="list-group-item list-group-item-action">{{ $workout_day->day->name }}</a>
+                            <a href="{{ route('workout.day.show', [$workout->id, $workout_day->id]) }}" class="list-group-item list-group-item-action @if($workout_day->day->number == date('w')) active @endif">{{ $workout_day->day->name }}</a>
                         @endforeach
                     </div>
 

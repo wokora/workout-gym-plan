@@ -10,8 +10,8 @@
                     <table class="table table-bordered">
                         <thead class="thead-dark">
                             <tr>
+                                <th>Date</th>
                                 <th>Weight</th>
-                                <th>Height</th>
                                 <th>BMI</th>
                                 <th></th>
                             </tr>
@@ -20,6 +20,8 @@
                         @foreach( $vitals as $vital )
                             <?php
                                 $bmi = round(($vital->weight / $vital->height / $vital->height) * 10000, 1);
+
+                                $date_measured = \Carbon\Carbon::createFromFormat('Y-m-d', $vital->date_measured);
 
                                 $class = '';
 
@@ -40,8 +42,8 @@
                                 }
                             ?>
                             <tr class="table-{{ $class }}">
+                                <td>{{ $date_measured->format('d F, Y') }}</td>
                                 <td>{{ $vital->weight }}</td>
-                                <td>{{ $vital->height }}</td>
                                 <td>{{ $bmi }}</td>
                                 <td align="right">
                                     <a href="{{ route('vital.show', $vital->id) }}">View</a>
