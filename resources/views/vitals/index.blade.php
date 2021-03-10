@@ -12,7 +12,6 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Weight</th>
-                                <th>BMI</th>
                                 <th></th>
                             </tr>
                         </thead>
