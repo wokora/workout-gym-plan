@@ -10,9 +10,9 @@
                     <table class="table table-bordered">
                         <thead class="thead-dark">
                             <tr>
-                                <th>Min</th>
+                                <th>Max</th>
                                 <th class="text-center">Ideal</th>
-                                <th class="text-right">Max</th>
+                                <th class="text-right">Min</th>
                             </tr>
                         </thead>
                         <tbody>
