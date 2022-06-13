@@ -20,9 +20,9 @@
                             $height_sqrd = ($current_vital->height / 100 *  $current_vital->height / 100);
                             ?>
                             <tr class="table">
-                                <td>{{ round(18.5 * $height_sqrd, 2) }} </td>
+                                <td>{{ round(24.9 * $height_sqrd, 2) }}</td>
                                 <td class="text-center">{{ round(22.2 * $height_sqrd, 2) }}</td>
-                                <td class="text-right">{{ round(24.9 * $height_sqrd, 2) }}</td>
+                                <td class="text-right">{{ round(18.5 * $height_sqrd, 2) }} </td>
                             </tr>
                         </tbody>
 
