@@ -17,9 +17,11 @@ class VitalController extends Controller
      */
     public function index()
     {
-        $vitals = Auth::user()->vitals()->orderBy('date_measured', 'ASC')->get();
+        $vitals = Auth::user()->vitals()->orderBy('date_measured', 'DESC');
+        $all_vitals = $vitals->get();
+        $current_vital = $vitals->first();
 
-        return view('vitals.index', ['vitals' => $vitals]);
+        return view('vitals.index', ['vitals' => $all_vitals, 'current_vital' => $current_vital]);
     }
 
     /**
@@ -48,13 +50,13 @@ class VitalController extends Controller
             ]
         )->validate();
 
-        $user_vital = Auth::user()->vitals()->create([
+        Auth::user()->vitals()->create([
             'weight' => $request->weight,
             'height' => $request->height,
             'date_measured' => $request->date
         ]);
 
-        return redirect()->route('vital.show', $user_vital->id)->with('success', 'Vital Recorded');
+        return redirect()->route('vital.index')->with('success', 'Vital Recorded');
     }
 
     /**
