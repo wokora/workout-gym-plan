@@ -13,4 +13,14 @@ class Body extends Model
     protected $table = 'exercise_body_section';
 
     protected $fillable = ['body_section_id'];
+
+    public function body_section()
+    {
+        return $this->belongsTo(\App\Models\Body\Body::class, 'body_section_id');
+    }
+
+    public function getNameAttribute()
+    {
+        return $this->body_section->name ?? '';
+    }
 }

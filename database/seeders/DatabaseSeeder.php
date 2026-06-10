@@ -14,5 +14,9 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call( DayTableSeeder::class );
+        $this->call( ExerciseAndBodySeeder::class );
+        $this->call( DefaultRoutineSeeder::class );
+        $this->call( FoodAndCategorySeeder::class );
+        $this->call( MealTypeSeeder::class );
     }
 }

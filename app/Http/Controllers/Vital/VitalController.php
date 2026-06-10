@@ -120,4 +120,59 @@ class VitalController extends Controller
 
         return redirect()->route('vital.index')->with('success', 'Vital Deleted');
     }
+
+    /**
+     * Export vitals to a downloadable JSON file.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function export()
+    {
+        $vitals = Auth::user()->vitals()->orderBy('date_measured', 'asc')->get(['weight', 'height', 'date_measured']);
+        $json = $vitals->toJson(JSON_PRETTY_PRINT);
+        $fileName = 'vitals_' . date('Y-m-d') . '.json';
+
+        return response($json, 200, [
+            'Content-Type' => 'application/json',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+        ]);
+    }
+
+    /**
+     * Import vitals from an uploaded JSON file.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'vitals_file' => 'required|file|mimes:json,txt',
+        ]);
+
+        $content = file_get_contents($request->file('vitals_file')->getRealPath());
+        $data = json_decode($content, true);
+
+        if (!is_array($data)) {
+            return redirect()->route('vital.index')->withErrors(['vitals_file' => 'Invalid JSON structure. Must be an array of records.']);
+        }
+
+        $imported = 0;
+        foreach ($data as $entry) {
+            if (isset($entry['weight']) && isset($entry['height']) && isset($entry['date_measured'])) {
+                $date = date('Y-m-d', strtotime($entry['date_measured']));
+                
+                Auth::user()->vitals()->updateOrCreate(
+                    ['date_measured' => $date],
+                    [
+                        'weight' => floatval($entry['weight']),
+                        'height' => floatval($entry['height']),
+                    ]
+                );
+                $imported++;
+            }
+        }
+
+        return redirect()->route('vital.index')->with('success', "Imported {$imported} vitals successfully.");
+    }
 }

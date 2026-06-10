@@ -1,0 +1,440 @@
+{
+  "body_sections": [
+    {
+      "name": "Chest",
+      "description": "Pectoralis major and minor muscles, responsible for pushing movements."
+    },
+    {
+      "name": "Back",
+      "description": "Latissimus dorsi, rhomboids, trapezius, and erector spinae, responsible for pulling movements."
+    },
+    {
+      "name": "Shoulders",
+      "description": "Deltoids (anterior, lateral, posterior) and rotator cuff muscles."
+    },
+    {
+      "name": "Biceps",
+      "description": "Biceps brachii on the front of the upper arm, responsible for elbow flexion."
+    },
+    {
+      "name": "Triceps",
+      "description": "Triceps brachii on the back of the upper arm, responsible for elbow extension."
+    },
+    {
+      "name": "Quads",
+      "description": "Quadriceps femoris on the front of the thigh, responsible for knee extension."
+    },
+    {
+      "name": "Hamstrings",
+      "description": "Hamstring group on the back of the thigh, responsible for knee flexion."
+    },
+    {
+      "name": "Glutes",
+      "description": "Gluteus maximus, medius, and minimus, responsible for hip extension and stabilization."
+    },
+    {
+      "name": "Calves",
+      "description": "Gastrocnemius and soleus muscles of the lower leg, responsible for plantar flexion."
+    },
+    {
+      "name": "Abs",
+      "description": "Rectus abdominis, obliques, and core muscles, responsible for stabilization and flexion."
+    },
+    {
+      "name": "Forearms",
+      "description": "Brachioradialis and wrist flexor/extensor muscles of the lower arms."
+    }
+  ],
+  "exercises": [
+    {
+      "name": "Barbell Bench Press",
+      "description": "Lie flat on a bench, lower a barbell to your chest, and push it up until arms are locked.",
+      "body_sections": ["Chest", "Shoulders", "Triceps"]
+    },
+    {
+      "name": "Incline Barbell Bench Press",
+      "description": "Press a barbell upward on a 30 to 45 degree incline bench to target upper chest fibers.",
+      "body_sections": ["Chest", "Shoulders", "Triceps"]
+    },
+    {
+      "name": "Decline Barbell Bench Press",
+      "description": "Press a barbell upward on a decline bench to target lower chest fibers.",
+      "body_sections": ["Chest", "Triceps"]
+    },
+    {
+      "name": "Flat Dumbbell Press",
+      "description": "Lie on a flat bench and press dumbbells upwards from chest level.",
+      "body_sections": ["Chest", "Shoulders", "Triceps"]
+    },
+    {
+      "name": "Incline Dumbbell Press",
+      "description": "Lie on an incline bench, press dumbbells from shoulder level upwards until arms are extended.",
+      "body_sections": ["Chest", "Shoulders", "Triceps"]
+    },
+    {
+      "name": "Decline Dumbbell Press",
+      "description": "Lie on a decline bench and press dumbbells upwards to target the lower chest.",
+      "body_sections": ["Chest", "Triceps"]
+    },
+    {
+      "name": "Dumbbell Fly",
+      "description": "Lie on a flat bench, lower dumbbells out to the sides in a wide arc, then bring them back together.",
+      "body_sections": ["Chest"]
+    },
+    {
+      "name": "Incline Dumbbell Fly",
+      "description": "Perform a fly movement on an incline bench to target the upper chest area.",
+      "body_sections": ["Chest"]
+    },
+    {
+      "name": "Cable Crossover",
+      "description": "Stand between two pulleys, grab handles, and bring hands together in a wide arc to target the chest.",
+      "body_sections": ["Chest"]
+    },
+    {
+      "name": "Pec Dec Fly",
+      "description": "Sit at the machine and bring the padded arm levers together in front of your chest.",
+      "body_sections": ["Chest"]
+    },
+    {
+      "name": "Push-up",
+      "description": "Place hands shoulder-width apart, keep body straight, lower chest to floor, and push back up.",
+      "body_sections": ["Chest", "Shoulders", "Triceps", "Abs"]
+    },
+    {
+      "name": "Chest Dip",
+      "description": "Suspend body on parallel bars, lean forward slightly, lower body by bending elbows, and press up.",
+      "body_sections": ["Chest", "Triceps", "Shoulders"]
+    },
+    {
+      "name": "Deadlift",
+      "description": "Lift a loaded barbell off the ground to hip level, keeping the back straight and using the hips and legs.",
+      "body_sections": ["Back", "Hamstrings", "Glutes"]
+    },
+    {
+      "name": "Sumo Deadlift",
+      "description": "Perform a deadlift with a very wide stance and hands gripping the bar inside the knees.",
+      "body_sections": ["Back", "Hamstrings", "Quads", "Glutes"]
+    },
+    {
+      "name": "Pull-Up",
+      "description": "Hang from a bar and pull your body up until your chin clears the bar, focusing on the back muscles.",
+      "body_sections": ["Back", "Biceps"]
+    },
+    {
+      "name": "Chin-Up",
+      "description": "Hang from a bar with an underhand grip and pull body up until chin clears the bar.",
+      "body_sections": ["Back", "Biceps"]
+    },
+    {
+      "name": "Lat Pulldown",
+      "description": "Sit at a pulldown station and pull the bar down to your upper chest, engaging the latissimus dorsi.",
+      "body_sections": ["Back", "Biceps"]
+    },
+    {
+      "name": "Bent-Over Barbell Row",
+      "description": "Hinge at the hips, hold a barbell, and pull it to your lower chest, squeezing your shoulder blades.",
+      "body_sections": ["Back", "Biceps"]
+    },
+    {
+      "name": "One-Arm Dumbbell Row",
+      "description": "Support knee and hand on a bench, pull a dumbbell up to hip level with one arm.",
+      "body_sections": ["Back", "Biceps"]
+    },
+    {
+      "name": "T-Bar Row",
+      "description": "Straddle a landmine barbell with a handle attached, pull the weight toward your abdomen.",
+      "body_sections": ["Back", "Biceps"]
+    },
+    {
+      "name": "Seated Cable Row",
+      "description": "Sit at a cable station, pull the handle toward your lower stomach while keeping back straight.",
+      "body_sections": ["Back", "Biceps"]
+    },
+    {
+      "name": "Straight-Arm Cable Pulldown",
+      "description": "Stand at a cable station, keep arms straight, and pull the bar down to your thighs.",
+      "body_sections": ["Back"]
+    },
+    {
+      "name": "Back Extension",
+      "description": "Lie face down on a hyperextension bench, lower torso, then raise it using lower back muscles.",
+      "body_sections": ["Back", "Glutes", "Hamstrings"]
+    },
+    {
+      "name": "Barbell Shrug",
+      "description": "Hold a barbell in front of thighs and shrug shoulders upward to target trapezius muscles.",
+      "body_sections": ["Back", "Shoulders"]
+    },
+    {
+      "name": "Overhead Barbell Press",
+      "description": "Press a barbell from shoulder height directly overhead while standing, keeping the core tight.",
+      "body_sections": ["Shoulders", "Triceps"]
+    },
+    {
+      "name": "Seated Dumbbell Shoulder Press",
+      "description": "Sit on a bench with back support, press dumbbells overhead from shoulder height.",
+      "body_sections": ["Shoulders", "Triceps"]
+    },
+    {
+      "name": "Dumbbell Lateral Raise",
+      "description": "Stand and raise dumbbells to your sides until arms are parallel to the floor, targeting lateral deltoids.",
+      "body_sections": ["Shoulders"]
+    },
+    {
+      "name": "Cable Lateral Raise",
+      "description": "Stand next to a low pulley and pull the cable across your body out to the side.",
+      "body_sections": ["Shoulders"]
+    },
+    {
+      "name": "Front Dumbbell Raise",
+      "description": "Raise dumbbells one at a time or together in front of you to shoulder height.",
+      "body_sections": ["Shoulders"]
+    },
+    {
+      "name": "Arnold Press",
+      "description": "Press dumbbells overhead starting with palms facing you and rotating them outward as you press.",
+      "body_sections": ["Shoulders", "Triceps"]
+    },
+    {
+      "name": "Bent-Over Dumbbell Rear Delt Raise",
+      "description": "Bend forward at the hips and raise dumbbells to your sides to target posterior deltoids.",
+      "body_sections": ["Shoulders", "Back"]
+    },
+    {
+      "name": "Face Pull",
+      "description": "Pull a cable rope attachment toward your face, flare elbows out, and squeeze rear shoulders.",
+      "body_sections": ["Shoulders", "Back"]
+    },
+    {
+      "name": "Upright Row",
+      "description": "Pull a barbell or dumbbells straight up in front of your body toward your chin, raising elbows.",
+      "body_sections": ["Shoulders", "Back"]
+    },
+    {
+      "name": "Barbell Bicep Curl",
+      "description": "Hold a barbell with an underhand grip and curl it upwards towards shoulders.",
+      "body_sections": ["Biceps"]
+    },
+    {
+      "name": "Dumbbell Bicep Curl",
+      "description": "Hold dumbbells at sides, curl weights up towards shoulders by flexing the elbows.",
+      "body_sections": ["Biceps"]
+    },
+    {
+      "name": "Hammer Curl",
+      "description": "Hold dumbbells with a neutral grip (palms facing) and curl them up, targeting brachialis and biceps.",
+      "body_sections": ["Biceps", "Forearms"]
+    },
+    {
+      "name": "Preacher Curl",
+      "description": "Rest upper arms on a slanted preacher bench, curl barbell or dumbbells upwards.",
+      "body_sections": ["Biceps"]
+    },
+    {
+      "name": "Concentration Curl",
+      "description": "Sit on a bench, rest elbow against inner thigh, curl dumbbell upward focusing on bicep peak.",
+      "body_sections": ["Biceps"]
+    },
+    {
+      "name": "Cable Bicep Curl",
+      "description": "Perform bicep curls using a straight bar or rope attachment on a low cable pulley.",
+      "body_sections": ["Biceps"]
+    },
+    {
+      "name": "Incline Dumbbell Curl",
+      "description": "Sit on a 45-degree incline bench and curl dumbbells to stretch the long head of the biceps.",
+      "body_sections": ["Biceps"]
+    },
+    {
+      "name": "Spider Curl",
+      "description": "Lie chest down on a preacher bench and curl a barbell hanging straight down.",
+      "body_sections": ["Biceps"]
+    },
+    {
+      "name": "Tricep Pushdown",
+      "description": "Push a cable attachment down until arms are fully extended at your sides, squeezing the triceps.",
+      "body_sections": ["Triceps"]
+    },
+    {
+      "name": "Overhead Cable Tricep Extension",
+      "description": "Face away from a high pulley, pull a rope attachment forward and overhead until arms extend.",
+      "body_sections": ["Triceps"]
+    },
+    {
+      "name": "Skull Crusher",
+      "description": "Lie on a bench, lower a barbell or dumbbells toward your forehead by bending at the elbows, then extend.",
+      "body_sections": ["Triceps"]
+    },
+    {
+      "name": "Close-Grip Bench Press",
+      "description": "Perform a bench press with hands spaced closer together to focus load onto the triceps.",
+      "body_sections": ["Triceps", "Chest"]
+    },
+    {
+      "name": "Overhead Dumbbell Tricep Extension",
+      "description": "Hold a single dumbbell with both hands overhead, lower it behind your head, then extend arms.",
+      "body_sections": ["Triceps"]
+    },
+    {
+      "name": "Tricep Dip",
+      "description": "Suspend body on parallel bars, lower body vertically by bending elbows, and push back up.",
+      "body_sections": ["Triceps", "Chest", "Shoulders"]
+    },
+    {
+      "name": "Dumbbell Kickback",
+      "description": "Hinge forward, hold upper arm parallel to torso, and extend arm backward to straighten elbow.",
+      "body_sections": ["Triceps"]
+    },
+    {
+      "name": "Back Squat",
+      "description": "Rest a barbell on your upper back, bend hips and knees to lower your body, then stand back up.",
+      "body_sections": ["Quads", "Glutes", "Hamstrings", "Calves"]
+    },
+    {
+      "name": "Front Squat",
+      "description": "Rest a barbell on the front of your shoulders, lower hips into a squat, and push back up.",
+      "body_sections": ["Quads", "Glutes", "Hamstrings"]
+    },
+    {
+      "name": "Goblet Squat",
+      "description": "Hold a dumbbell or kettlebell vertically against your chest and perform a deep squat.",
+      "body_sections": ["Quads", "Glutes", "Hamstrings"]
+    },
+    {
+      "name": "Leg Press",
+      "description": "Sit in a leg press machine and push the platform away from you using your legs.",
+      "body_sections": ["Quads", "Glutes", "Hamstrings"]
+    },
+    {
+      "name": "Hack Squat",
+      "description": "Perform squats on a hack squat machine, which stabilizes your back and focuses load on quads.",
+      "body_sections": ["Quads", "Glutes"]
+    },
+    {
+      "name": "Barbell Lunge",
+      "description": "Rest a barbell on shoulders, step forward with one leg, lower hips until back knee near floor, push up.",
+      "body_sections": ["Quads", "Glutes", "Hamstrings"]
+    },
+    {
+      "name": "Bulgarian Split Squat",
+      "description": "Place rear foot on a bench behind you, hold dumbbells, and squat down with front leg.",
+      "body_sections": ["Quads", "Glutes", "Hamstrings"]
+    },
+    {
+      "name": "Leg Extension",
+      "description": "Sit in extension machine, place shins behind roller pad, and extend knees fully.",
+      "body_sections": ["Quads"]
+    },
+    {
+      "name": "Romanian Deadlift",
+      "description": "Hold a barbell, hinge forward at hips with slight knee bend, lower bar to shins, and pull back up.",
+      "body_sections": ["Hamstrings", "Glutes", "Back"]
+    },
+    {
+      "name": "Lying Leg Curl",
+      "description": "Lie face down on a leg curl machine and curl the roller pad toward your glutes.",
+      "body_sections": ["Hamstrings"]
+    },
+    {
+      "name": "Seated Leg Curl",
+      "description": "Sit in machine, place legs over roller, and pull pad down and back toward your thighs.",
+      "body_sections": ["Hamstrings"]
+    },
+    {
+      "name": "Glute-Ham Raise",
+      "description": "Hook ankles in a GHR machine, lower torso forward, and pull yourself up using hamstrings and glutes.",
+      "body_sections": ["Hamstrings", "Glutes"]
+    },
+    {
+      "name": "Good Morning",
+      "description": "Rest barbell on upper back, bend forward at hips with straight back, then stand up.",
+      "body_sections": ["Hamstrings", "Glutes", "Back"]
+    },
+    {
+      "name": "Barbell Hip Thrust",
+      "description": "Rest upper back on bench, place loaded barbell over hips, and drive hips upward squeezing glutes.",
+      "body_sections": ["Glutes", "Hamstrings"]
+    },
+    {
+      "name": "Glute Bridge",
+      "description": "Lie on back with knees bent, feet flat, and lift hips up toward ceiling.",
+      "body_sections": ["Glutes", "Hamstrings"]
+    },
+    {
+      "name": "Cable Kickback",
+      "description": "Attach ankle cuff to low pulley and kick leg straight back behind you.",
+      "body_sections": ["Glutes"]
+    },
+    {
+      "name": "Standing Calf Raise",
+      "description": "Rise up on the balls of your feet against resistance, stretching and contracting the calf muscles.",
+      "body_sections": ["Calves"]
+    },
+    {
+      "name": "Seated Calf Raise",
+      "description": "Sit at machine with pad on thighs, lift heels to raise weight, targeting soleus calf muscle.",
+      "body_sections": ["Calves"]
+    },
+    {
+      "name": "Calf Press on Leg Press",
+      "description": "Place balls of feet on lower edge of leg press platform and push platform away by extending ankles.",
+      "body_sections": ["Calves"]
+    },
+    {
+      "name": "Plank",
+      "description": "Hold a push-up position on your forearms, keeping your body in a straight line to engage the core.",
+      "body_sections": ["Abs"]
+    },
+    {
+      "name": "Side Plank",
+      "description": "Lie on side supported by elbow, lift hips off floor to align body in straight line.",
+      "body_sections": ["Abs"]
+    },
+    {
+      "name": "Hanging Knee Raise",
+      "description": "Hang from a pull-up bar and raise your knees toward your chest, engaging the lower abdominals.",
+      "body_sections": ["Abs"]
+    },
+    {
+      "name": "Hanging Leg Raise",
+      "description": "Hang from bar and raise legs straight up until they are parallel to floor.",
+      "body_sections": ["Abs"]
+    },
+    {
+      "name": "Ab Wheel Rollout",
+      "description": "Kneel on floor, hold ab wheel, and roll forward as far as possible keeping core locked.",
+      "body_sections": ["Abs"]
+    },
+    {
+      "name": "Cable Crunch",
+      "description": "Kneel beneath high pulley, hold rope behind neck, and crunch downward contracting abdominals.",
+      "body_sections": ["Abs"]
+    },
+    {
+      "name": "Bicycle Crunch",
+      "description": "Lie on back and perform a pedaling motion, touching opposite elbow to opposite knee.",
+      "body_sections": ["Abs"]
+    },
+    {
+      "name": "Russian Twist",
+      "description": "Sit on floor with knees bent and feet slightly raised, twist torso from side to side.",
+      "body_sections": ["Abs"]
+    },
+    {
+      "name": "Barbell Wrist Curl",
+      "description": "Rest forearms on bench holding a barbell palms up, curl wrists upward.",
+      "body_sections": ["Forearms"]
+    },
+    {
+      "name": "Reverse Barbell Wrist Curl",
+      "description": "Rest forearms on bench holding a barbell palms down, curl wrists upward.",
+      "body_sections": ["Forearms"]
+    },
+    {
+      "name": "Farmer's Walk",
+      "description": "Pick up heavy dumbbells and walk forward for distance, building grip and core stability.",
+      "body_sections": ["Forearms", "Abs", "Back"]
+    }
+  ]
+}
