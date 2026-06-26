@@ -23,13 +23,9 @@
         * { box-sizing: border-box; }
 
         body {
-            background-color: #0b0f17 !important;
+            background: #0b0f17 !important;
             color: #f1f5f9 !important;
             font-family: 'Inter', sans-serif !important;
-            background-image:
-                radial-gradient(at 10% 20%, rgba(163, 230, 53, 0.05) 0px, transparent 50%),
-                radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.05) 0px, transparent 50%) !important;
-            background-attachment: fixed !important;
             min-height: 100vh !important;
             margin: 0;
             overflow-x: hidden;
@@ -41,7 +37,7 @@
             letter-spacing: -0.02em !important;
         }
 
-        .text-glow { text-shadow: 0 0 10px rgba(163, 230, 53, 0.4) !important; }
+        .text-glow { text-shadow: none !important; }
 
         /* ── Sidebar Overlay ── */
         .sidebar-overlay {
@@ -54,69 +50,69 @@
         /* ── Sidebar Drawer ── */
         .sidebar {
             position: fixed; top: 0; left: 0; width: 280px; height: 100%; z-index: 999;
-            background: rgba(13, 18, 30, 0.98);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-right: 1px solid rgba(255,255,255,0.08);
+            background: #080c14;
+            border-right: 1px solid rgba(255,255,255,0.06);
             transform: translateX(-100%);
             transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex; flex-direction: column;
-            box-shadow: 8px 0 40px rgba(0,0,0,0.3);
+            box-shadow: 4px 0 32px rgba(0,0,0,0.5);
         }
         .sidebar.open { transform: translateX(0); }
 
         .sidebar-brand {
-            padding: 1.75rem 1.5rem;
-            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.3rem;
-            background: linear-gradient(135deg, rgba(163,230,53,0.08), rgba(16,185,129,0.04));
+            padding: 1.5rem 1.5rem 1.25rem;
             border-bottom: 1px solid rgba(255,255,255,0.06);
-            position: relative; overflow: hidden;
-        }
-        .sidebar-brand::after {
-            content: ''; position: absolute; bottom: 0; left: 1.5rem; width: 40px; height: 3px;
-            background: linear-gradient(135deg, #a3e635, #10b981); border-radius: 3px;
         }
         .sidebar-brand .welcome-text {
-            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
-            color: #64748b; margin-bottom: 0.3rem;
+            font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em;
+            color: #475569; margin-bottom: 0.35rem;
+            font-family: 'Inter', sans-serif; font-weight: 500;
         }
         .sidebar-brand .user-name {
-            background: linear-gradient(135deg, #a3e635 0%, #10b981 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            letter-spacing: -0.03em; text-shadow: 0 0 20px rgba(163,230,53,0.15);
+            font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.15rem;
+            color: #f1f5f9; letter-spacing: -0.02em;
+            line-height: 1.2;
         }
 
-        .sidebar-nav { flex: 1; overflow-y: auto; padding: 0.5rem 0.75rem; }
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 0.75rem 0.75rem; }
+
+        .sidebar-nav .nav-section {
+            padding: 0.5rem 1rem 0.35rem;
+            font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.12em;
+            color: #334155; font-family: 'Inter', sans-serif; font-weight: 600;
+        }
 
         .sidebar-nav a {
-            display: flex; align-items: center; gap: 0.85rem;
-            padding: 0.75rem 1rem; color: #94a3b8; text-decoration: none;
-            font-weight: 500; font-size: 0.9rem; font-family: 'Inter', sans-serif;
-            transition: all 0.2s ease; border-radius: 10px; margin-bottom: 2px;
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.7rem 0.9rem; color: #64748b; text-decoration: none;
+            font-weight: 500; font-size: 0.875rem; font-family: 'Inter', sans-serif;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); border-radius: 8px;
+            margin-bottom: 1px;
             position: relative;
         }
         .sidebar-nav a:hover {
-            color: #e2e8f0; background: rgba(255,255,255,0.04);
+            color: #e2e8f0; background: rgba(255,255,255,0.03);
         }
         .sidebar-nav a.active {
-            color: #a3e635; background: linear-gradient(135deg, rgba(163,230,53,0.1), rgba(16,185,129,0.05));
+            color: #f1f5f9; background: #141c2b;
             font-weight: 600;
         }
         .sidebar-nav a.active::before {
             content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-            width: 3px; height: 24px; background: #a3e635; border-radius: 0 3px 3px 0;
+            width: 3px; height: 20px; background: #a3e635; border-radius: 0 2px 2px 0;
         }
-        .sidebar-nav a svg { width: 19px; height: 19px; flex-shrink: 0; opacity: 0.7; }
-        .sidebar-nav a.active svg, .sidebar-nav a:hover svg { opacity: 1; }
+        .sidebar-nav a svg { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.45; transition: opacity 0.2s ease; }
+        .sidebar-nav a.active svg { opacity: 0.9; color: #a3e635; }
+        .sidebar-nav a:hover svg { opacity: 0.65; }
 
         .sidebar-footer {
-            padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.06);
-            background: rgba(0,0,0,0.15);
+            padding: 0.75rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.05);
+            background: #060a10;
         }
         .sidebar-footer .logout-link {
-            color: #64748b; font-size: 0.8rem; text-decoration: none;
-            display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0;
-            transition: color 0.15s ease;
+            color: #475569; font-size: 0.8rem; text-decoration: none;
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0;
+            transition: color 0.15s ease; font-family: 'Inter', sans-serif; font-weight: 500;
         }
         .sidebar-footer .logout-link:hover { color: #ef4444; }
 
@@ -137,18 +133,41 @@
         /* ── Top Bar ── */
         .topbar {
             position: sticky; top: 0; z-index: 100;
-            display: flex; align-items: center; padding: 0.65rem 1rem;
-            background: rgba(9,13,22,0.88);
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            box-shadow: 0 1px 20px rgba(0,0,0,0.2);
+            padding: 1rem 1rem 0;
+            transition: padding 0.2s ease;
+        }
+        .topbar-menu {
+            background: #0c1220;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            box-shadow: inset 0 0 6px rgba(0,0,0,0.2), 0 2px 12px rgba(0,0,0,0.15);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.5rem 1rem;
+            min-height: 52px;
+        }
+        .topbar-left {
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        .topbar-right {
+            display: flex; align-items: center; gap: 0.75rem;
         }
         .topbar-brand {
-            margin-left: 0.75rem;
             font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem;
-            background: linear-gradient(135deg, #a3e635, #10b981);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            color: #f1f5f9;
             letter-spacing: -0.02em;
+        }
+        .topbar-user {
+            display: flex; align-items: center; gap: 0.5rem;
+            color: #94a3b8; font-size: 0.85rem; font-family: 'Inter', sans-serif;
+            font-weight: 500; text-decoration: none;
+        }
+        .topbar-user-avatar {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: #1e293b; color: #a3e635;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.85rem;
+            letter-spacing: -0.02em;
+            flex-shrink: 0;
         }
 
         /* ── Main Content ── */
@@ -160,32 +179,31 @@
             .sidebar { transform: translateX(0); }
             .sidebar-overlay { display: none; }
             .hamburger { display: none; }
-            .topbar { padding-left: 296px; }
-            .main-content { padding-left: 296px; padding-right: 1.5rem; padding-bottom: 2rem; }
+            .topbar { padding-left: calc(280px + 1rem); padding-right: 1rem; }
+            .main-content { padding-left: calc(280px + 1.5rem); padding-right: 1.5rem; padding-bottom: 2rem; }
             .content-container { padding: 1rem 0; }
         }
 
         /* ── Cards ── */
         .card {
-            background: rgba(20, 27, 45, 0.65) !important;
-            backdrop-filter: blur(16px) !important; -webkit-backdrop-filter: blur(16px) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            border-radius: 16px !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+            background: #101826 !important;
+            border: 1px solid rgba(255, 255, 255, 0.06) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
             overflow: hidden !important; color: #f1f5f9 !important;
         }
-        .card:hover { border-color: rgba(163, 230, 53, 0.3) !important; box-shadow: 0 15px 35px rgba(163, 230, 53, 0.08) !important; }
+        .card:hover { border-color: rgba(163, 230, 53, 0.2) !important; }
         .card-header {
-            background: rgba(255, 255, 255, 0.02) !important;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            background: #0c1220 !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
             padding: 1.25rem 1.5rem !important;
             font-family: 'Outfit', sans-serif !important; font-weight: 600 !important;
-            font-size: 1.15rem !important; color: #ffffff !important; letter-spacing: -0.01em !important;
+            font-size: 1.05rem !important; color: #f1f5f9 !important; letter-spacing: -0.01em !important;
         }
         .card-body { padding: 1.5rem !important; }
         .card-footer {
-            background: rgba(255, 255, 255, 0.02) !important;
-            border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+            background: #0c1220 !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
             padding: 1.25rem 1.5rem !important;
         }
 
@@ -198,8 +216,8 @@
         }
         .list-group-item-action:hover { background: rgba(255, 255, 255, 0.02) !important; color: #ffffff !important; padding-left: 1.75rem !important; }
         .list-group-item.active {
-            background: linear-gradient(135deg, rgba(163, 230, 53, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%) !important;
-            border-left: 4px solid #a3e635 !important; color: #a3e635 !important; font-weight: 600 !important;
+            background: #141c2b !important;
+            border-left: 3px solid #a3e635 !important; color: #f1f5f9 !important; font-weight: 600 !important;
         }
 
         /* ── Buttons ── */
@@ -210,21 +228,21 @@
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important; font-size: 0.85rem !important;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #a3e635 0%, #10b981 100%) !important;
+            background: #a3e635 !important;
             border: none !important; color: #0b0f17 !important;
-            box-shadow: 0 4px 15px rgba(163, 230, 53, 0.3) !important;
+            box-shadow: 0 2px 8px rgba(163, 230, 53, 0.2) !important;
         }
         .btn-primary:hover, .btn-primary:focus {
-            transform: translateY(-2px) !important; box-shadow: 0 8px 25px rgba(163, 230, 53, 0.5) !important;
-            background: linear-gradient(135deg, #b4f34c 0%, #10b981 100%) !important; color: #0b0f17 !important;
+            transform: translateY(-2px) !important; box-shadow: 0 4px 16px rgba(163, 230, 53, 0.3) !important;
+            background: #b8f54a !important; color: #0b0f17 !important;
         }
         .btn-outline-primary {
-            color: #a3e635 !important; border: 2px solid #a3e635 !important; background: transparent !important;
+            color: #a3e635 !important; border: 1.5px solid #a3e635 !important; background: transparent !important;
         }
         .btn-outline-primary:hover, .btn-outline-primary:focus {
-            background: linear-gradient(135deg, #a3e635 0%, #10b981 100%) !important;
-            border-color: transparent !important; color: #0b0f17 !important;
-            transform: translateY(-2px) !important; box-shadow: 0 8px 20px rgba(163, 230, 53, 0.3) !important;
+            background: #a3e635 !important;
+            border-color: #a3e635 !important; color: #0b0f17 !important;
+            transform: translateY(-2px) !important; box-shadow: 0 4px 16px rgba(163, 230, 53, 0.3) !important;
         }
         .btn-secondary {
             background: #1e293b !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; color: #e2e8f0 !important;
@@ -234,18 +252,18 @@
         /* ── Forms ── */
         .form-group label {
             font-family: 'Outfit', sans-serif !important; font-weight: 500 !important;
-            font-size: 0.9rem !important; color: #94a3b8 !important; margin-bottom: 0.5rem !important;
+            font-size: 0.85rem !important; color: #64748b !important; margin-bottom: 0.5rem !important;
             text-transform: uppercase !important; letter-spacing: 0.05em !important;
         }
         .form-control {
-            background-color: rgba(15, 23, 42, 0.6) !important;
-            border: 1px solid rgba(255, 255, 255, 0.12) !important; color: #f1f5f9 !important;
-            border-radius: 10px !important; padding: 0.75rem 1rem !important; height: auto !important;
+            background-color: #0f172a !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important; color: #f1f5f9 !important;
+            border-radius: 8px !important; padding: 0.75rem 1rem !important; height: auto !important;
             transition: all 0.2s ease !important;
         }
         .form-control:focus {
-            background-color: rgba(15, 23, 42, 0.8) !important;
-            border-color: #a3e635 !important; box-shadow: 0 0 0 3px rgba(163, 230, 53, 0.25) !important;
+            background-color: #0f172a !important;
+            border-color: #a3e635 !important; box-shadow: 0 0 0 3px rgba(163, 230, 53, 0.15) !important;
         }
         select.form-control {
             appearance: none !important;
@@ -275,24 +293,23 @@
             height: 100% !important; cursor: pointer !important; z-index: 2 !important; left: 0 !important; top: 0 !important;
         }
         .day-selector-item input[type="checkbox"]:checked + label {
-            background: linear-gradient(135deg, rgba(163, 230, 53, 0.2) 0%, rgba(16, 185, 129, 0.15) 100%) !important;
+            background: #1a2e1a !important;
             border-color: #a3e635 !important; color: #a3e635 !important;
-            box-shadow: 0 0 15px rgba(163, 230, 53, 0.15) !important;
+            box-shadow: 0 0 12px rgba(163, 230, 53, 0.1) !important;
         }
         .day-selector-item label {
             display: block !important; text-align: center !important; padding: 0.75rem 1rem !important;
-            background: rgba(30, 41, 59, 0.3) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            border-radius: 10px !important; color: #94a3b8 !important;
+            background: #121a26 !important; border: 1px solid rgba(255, 255, 255, 0.06) !important;
+            border-radius: 8px !important; color: #64748b !important;
             font-family: 'Outfit', sans-serif !important; font-weight: 600 !important; font-size: 0.9rem !important;
             margin: 0 !important; transition: all 0.2s ease !important; cursor: pointer !important;
         }
-        .day-selector-item label:hover { background: rgba(30, 41, 59, 0.5) !important; border-color: rgba(255, 255, 255, 0.2) !important; color: #ffffff !important; }
+        .day-selector-item label:hover { background: #1a2636 !important; border-color: rgba(255, 255, 255, 0.12) !important; color: #e2e8f0 !important; }
 
         .alert-success {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(163, 230, 53, 0.1) 100%) !important;
-            border: 1px solid rgba(16, 185, 129, 0.3) !important; color: #34d399 !important;
-            border-radius: 12px !important; font-weight: 500 !important;
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.05) !important;
+            background: #0d2818 !important;
+            border: 1px solid rgba(16, 185, 129, 0.2) !important; color: #34d399 !important;
+            border-radius: 10px !important; font-weight: 500 !important;
         }
 
         .hover-glow:hover { color: #a3e635 !important; text-shadow: 0 0 10px rgba(163, 230, 53, 0.3) !important; }
@@ -364,10 +381,22 @@
 
         <!-- Top Bar -->
         <div class="topbar">
-            <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Menu">
-                <span></span><span></span><span></span>
-            </button>
-            <span class="topbar-brand">{{ config('app.name', 'Lishe Afya') }}</span>
+            <div class="topbar-menu">
+                <div class="topbar-left">
+                    <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Menu">
+                        <span></span><span></span><span></span>
+                    </button>
+                    <span class="topbar-brand">{{ config('app.name', 'Lishe Afya') }}</span>
+                </div>
+                <div class="topbar-right">
+                    @auth
+                        <span class="topbar-user">
+                            <span class="topbar-user-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</span>
+                            <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
+                        </span>
+                    @endauth
+                </div>
+            </div>
         </div>
 
         <!-- Alert -->

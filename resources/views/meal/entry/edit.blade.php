@@ -38,9 +38,9 @@
                                 <input type="text" id="foodSearchInput" placeholder="Search foods..."
                                     style="flex: 1; background: transparent; border: none; color: #f1f5f9; padding: 14px 16px 14px 46px; font-size: 0.95rem; outline: none; font-family: 'Inter', sans-serif;">
                                 <button type="button" onclick="searchFoods()"
-                                    style="background: linear-gradient(135deg, #a3e635 0%, #10b981 100%); border: none; color: #0b0f17; padding: 10px 22px; margin: 5px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.03em; cursor: pointer; white-space: nowrap; transition: all 0.2s ease;"
-                                    onmouseover="this.style.boxShadow='0 0 20px rgba(163,230,53,0.4)'; this.style.transform='scale(1.03)';"
-                                    onmouseout="this.style.boxShadow='none'; this.style.transform='scale(1)';">
+                                    style="background: #a3e635; border: none; color: #0b0f17; padding: 10px 22px; margin: 5px; border-radius: 8px; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.03em; cursor: pointer; white-space: nowrap; transition: all 0.2s ease;"
+                                    onmouseover="this.style.background='#b8f54a'; this.style.transform='scale(1.02)';"
+                                    onmouseout="this.style.background='#a3e635'; this.style.transform='scale(1)';">
                                     Search
                                 </button>
                             </div>
@@ -222,10 +222,10 @@
             flex: 1 !important;
         }
         .day-selector-item input[type="radio"]:checked + label {
-            background: linear-gradient(135deg, rgba(163, 230, 53, 0.2) 0%, rgba(16, 185, 129, 0.15) 100%) !important;
+            background: #1a2e1a !important;
             border-color: #a3e635 !important;
             color: #a3e635 !important;
-            box-shadow: 0 0 15px rgba(163, 230, 53, 0.15) !important;
+            box-shadow: 0 0 12px rgba(163, 230, 53, 0.1) !important;
         }
     </style>
 @endsection

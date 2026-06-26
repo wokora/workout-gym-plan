@@ -1,9 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.auth')
 
 @section('content')
-<div class="content-container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
             <div class="card">
                 <div class="card-header">{{ __('Reset Password') }}</div>
 
@@ -39,14 +36,11 @@
                         </div>
 
                         <div class="form-group mb-0">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary btn-block mt-4 py-2" style="width: 100%;">
                                 {{ __('Reset Password') }}
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
 @endsection

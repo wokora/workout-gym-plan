@@ -77,22 +77,38 @@
                                 $tabCarbs = $grouped[$type->id]->sum(fn($e) => $e->foods->sum(fn($f) => $f->food->carbs ?? 0));
                                 $tabFat = $grouped[$type->id]->sum(fn($e) => $e->foods->sum(fn($f) => $f->food->fat ?? 0));
                             @endphp
-                            <div class="row text-center mb-3 mx-0" style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 0.8rem 0;">
-                                <div class="col-3">
-                                    <div class="font-weight-bold" style="font-size: 1.1rem; color: #f1f5f9;">{{ round($tabKcal) }}</div>
-                                    <small style="color: #64748b; font-size: 0.65rem; text-transform: uppercase;">kcal</small>
+                            <div class="row mb-3">
+                                <div class="col-6 col-md-3 mb-2">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center py-3">
+                                            <div class="font-weight-bold" style="font-size: 1.5rem; color: #f1f5f9;">{{ round($tabKcal) }}</div>
+                                            <small class="text-muted text-uppercase">kcal</small>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-3">
-                                    <div class="font-weight-bold" style="font-size: 1.1rem; color: #38bdf8;">{{ round($tabProtein, 1) }}g</div>
-                                    <small style="color: #64748b; font-size: 0.65rem; text-transform: uppercase;">Protein</small>
+                                <div class="col-6 col-md-3 mb-2">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center py-3">
+                                            <div class="font-weight-bold" style="font-size: 1.5rem; color: #38bdf8;">{{ round($tabProtein, 1) }}g</div>
+                                            <small class="text-muted text-uppercase">Protein</small>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-3">
-                                    <div class="font-weight-bold" style="font-size: 1.1rem; color: #fbbf24;">{{ round($tabCarbs, 1) }}g</div>
-                                    <small style="color: #64748b; font-size: 0.65rem; text-transform: uppercase;">Carbs</small>
+                                <div class="col-6 col-md-3 mb-2">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center py-3">
+                                            <div class="font-weight-bold" style="font-size: 1.5rem; color: #fbbf24;">{{ round($tabCarbs, 1) }}g</div>
+                                            <small class="text-muted text-uppercase">Carbs</small>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-3">
-                                    <div class="font-weight-bold" style="font-size: 1.1rem; color: #fb7185;">{{ round($tabFat, 1) }}g</div>
-                                    <small style="color: #64748b; font-size: 0.65rem; text-transform: uppercase;">Fat</small>
+                                <div class="col-6 col-md-3 mb-2">
+                                    <div class="card h-100">
+                                        <div class="card-body text-center py-3">
+                                            <div class="font-weight-bold" style="font-size: 1.5rem; color: #fb7185;">{{ round($tabFat, 1) }}g</div>
+                                            <small class="text-muted text-uppercase">Fat</small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

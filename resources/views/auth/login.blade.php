@@ -1,9 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.auth')
 
 @section('content')
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
             <div class="card">
                 <div class="card-header text-center pb-2 pt-3 font-weight-bold" style="font-size: 1.5rem; letter-spacing: 0.05em;">
                     SIGN <span class="text-primary text-glow">IN</span>
@@ -55,7 +52,4 @@
                     </div>
                 </form>
             </div>
-        </div>
-    </div>
-</div>
 @endsection

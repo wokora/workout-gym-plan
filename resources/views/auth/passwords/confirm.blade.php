@@ -1,9 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.auth')
 
 @section('content')
-<div class="content-container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
             <div class="card">
                 <div class="card-header">{{ __('Confirm Password') }}</div>
 
@@ -27,23 +24,20 @@
                             </div>
                         </div>
 
-                        <div class="form-group row mb-0">
-                            <div class="col-md-8 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Confirm Password') }}
-                                </button>
+                        <div class="form-group mb-0">
+                            <button type="submit" class="btn btn-primary btn-block mt-4 py-2" style="width: 100%;">
+                                {{ __('Confirm Password') }}
+                            </button>
 
-                                @if (Route::has('password.request'))
+                            @if (Route::has('password.request'))
+                                <div class="text-center mt-3">
                                     <a class="btn btn-link" href="{{ route('password.request') }}">
                                         {{ __('Forgot Your Password?') }}
                                     </a>
-                                @endif
-                            </div>
+                                </div>
+                            @endif
                         </div>
                     </form>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
 @endsection

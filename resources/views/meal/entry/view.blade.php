@@ -26,7 +26,7 @@
 
             <!-- Meal Type Badge -->
             <div class="text-center mb-4">
-                <span class="badge py-2 px-4" style="background: linear-gradient(135deg, rgba(163,230,53,0.15), rgba(16,185,129,0.1)); border: 1px solid rgba(163,230,53,0.3); border-radius: 12px; color: #a3e635; font-size: 0.95rem; font-weight: 600;">
+                <span class="badge py-2 px-4" style="background: #1a2e1a; border: 1px solid rgba(163,230,53,0.2); border-radius: 10px; color: #a3e635; font-size: 0.95rem; font-weight: 600;">
                     {{ $entry->meal_type->name }}
                 </span>
             </div>
@@ -88,25 +88,36 @@
                 $totalCarbs = $entry->foods->sum(fn($f) => $f->food->carbs ?? 0);
                 $totalFat = $entry->foods->sum(fn($f) => $f->food->fat ?? 0);
             @endphp
-            <div class="card">
-                <div class="card-header">Nutrition per 100g (combined)</div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-3">
-                            <h3 class="text-white font-weight-bold mb-0">{{ round($totalKcal) }}</h3>
-                            <small class="text-muted text-uppercase" style="font-size: 0.7rem;">kcal</small>
+            <div class="row mb-4">
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center py-3">
+                            <div class="font-weight-bold" style="font-size: 1.5rem; color: #f1f5f9;">{{ round($totalKcal) }}</div>
+                            <small class="text-muted text-uppercase">kcal</small>
                         </div>
-                        <div class="col-3">
-                            <h3 class="font-weight-bold mb-0" style="color: #38bdf8;">{{ round($totalProtein, 1) }}g</h3>
-                            <small class="text-muted text-uppercase" style="font-size: 0.7rem;">Protein</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center py-3">
+                            <div class="font-weight-bold" style="font-size: 1.5rem; color: #38bdf8;">{{ round($totalProtein, 1) }}g</div>
+                            <small class="text-muted text-uppercase">Protein</small>
                         </div>
-                        <div class="col-3">
-                            <h3 class="font-weight-bold mb-0" style="color: #fbbf24;">{{ round($totalCarbs, 1) }}g</h3>
-                            <small class="text-muted text-uppercase" style="font-size: 0.7rem;">Carbs</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center py-3">
+                            <div class="font-weight-bold" style="font-size: 1.5rem; color: #fbbf24;">{{ round($totalCarbs, 1) }}g</div>
+                            <small class="text-muted text-uppercase">Carbs</small>
                         </div>
-                        <div class="col-3">
-                            <h3 class="font-weight-bold mb-0" style="color: #fb7185;">{{ round($totalFat, 1) }}g</h3>
-                            <small class="text-muted text-uppercase" style="font-size: 0.7rem;">Fat</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center py-3">
+                            <div class="font-weight-bold" style="font-size: 1.5rem; color: #fb7185;">{{ round($totalFat, 1) }}g</div>
+                            <small class="text-muted text-uppercase">Fat</small>
                         </div>
                     </div>
                 </div>
