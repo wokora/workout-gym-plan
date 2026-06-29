@@ -13,9 +13,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Auth::routes();
+Route::get('login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+Route::post('logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+Route::get('login/sso', [App\Http\Controllers\Auth\LoginController::class, 'redirectToSSO'])->name('login.sso');
+Route::get('callback', [App\Http\Controllers\Auth\LoginController::class, 'handleSSOCallback'])->name('sso.callback');
 
-Route::middleware('auth')->group(function(){
+Route::middleware(['auth', 'sso.verify'])->group(function(){
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('index');
 
     Route::resource('workout', \App\Http\Controllers\Workout\WorkoutController::class);

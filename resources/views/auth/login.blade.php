@@ -6,50 +6,23 @@
                     SIGN <span class="text-primary text-glow">IN</span>
                 </div>
 
-                <form method="POST" action="{{ route('login') }}">
-                    @csrf
-                    <div class="card-body">
-                        <div class="form-group mb-4">
-                            <label for="email">{{ __('E-Mail Address') }}</label>
-                            <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus placeholder="e.g. gym@workout.com">
-                            @error('email')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label for="password" class="mb-0">{{ __('Password') }}</label>
-                            </div>
-                            <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password" placeholder="••••••••">
-                            @error('password')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" name="remember" class="custom-control-input" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                                <label class="custom-control-label text-muted" for="remember" style="font-size: 0.85rem; text-transform: none; letter-spacing: 0;">{{ __('Remember Me') }}</label>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary btn-block mt-4 py-2">
-                            {{ __('Login') }}
-                        </button>
+                @if ($errors->has('oauth'))
+                    <div class="alert alert-danger mx-3 mt-3 mb-0 text-center" role="alert" style="font-size: 0.9rem;">
+                        {{ $errors->first('oauth') }}
                     </div>
-                    
-                    <div class="text-center pb-3">
-                        @if (Route::has('password.request'))
-                            <a class="text-muted" style="font-size: 0.8rem; text-decoration: none;" href="{{ route('password.request') }}">
-                                {{ __('Forgot Your Password?') }}
-                            </a>
-                        @endif
-                    </div>
-                </form>
+                @endif
+
+                <div class="card-body text-center py-5">
+                    <p class="text-muted mb-4" style="font-size: 0.95rem;">
+                        Please authenticate via the secure Single Sign-On portal to access your account.
+                    </p>
+
+                    <a href="{{ route('login.sso') }}" class="btn btn-primary btn-block py-2.5 d-flex align-items-center justify-content-center" style="font-weight: 600; letter-spacing: 0.05em; font-size: 1rem; border-radius: 0.375rem; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);">
+                        <svg class="mr-2" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        SIGN IN WITH SSO
+                    </a>
+                </div>
             </div>
 @endsection
