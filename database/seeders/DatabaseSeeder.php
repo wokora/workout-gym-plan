@@ -18,5 +18,8 @@ class DatabaseSeeder extends Seeder
         $this->call( DefaultRoutineSeeder::class );
         $this->call( FoodAndCategorySeeder::class );
         $this->call( MealTypeSeeder::class );
+        $this->call( VitalUnitSeeder::class );
+        $this->call( InputTypeSeeder::class );
+        $this->call( VitalSeeder::class );
     }
 }

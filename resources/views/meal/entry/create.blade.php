@@ -1,216 +1,226 @@
 @extends('layouts.app')
 
-@section('title', 'Add Entry')
+@section('title', 'Add Food Entry')
 
 @section('content')
-    <div class="row justify-content-center">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>ADD FOOD ENTRY</span>
-                    <a href="{{ route('meal.day.show', [$meal->id, $day->id]) }}" class="text-primary font-weight-bold" style="font-size: 0.85rem; text-decoration: none;">&larr; Back to Day</a>
-                </div>
-
-                <form action="{{ route('meal.day.entry.store', [$meal->id, $day->id]) }}" method="post">
-                    @csrf
-                    <div class="card-body">
-                        <div class="form-group mb-4">
-                            <label>Meal Type</label>
-                            <div class="meal-type-grid">
-                                @foreach(\App\Models\Meal\Type::get() as $type)
-                                    <div class="day-selector-item">
-                                        <input type="radio" name="meal_type" value="{{ $type->id }}" id="mealType{{ $type->id }}" @if( old('meal_type', '') == $type->id ) checked @endif>
-                                        <label for="mealType{{ $type->id }}">{{ $type->name }}</label>
-                                    </div>
-                                @endforeach
-                            </div>
-                            @error('meal_type')
-                                <div class="text-danger mt-2" style="font-size: 80%">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <div style="position: relative; display: flex; align-items: center; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; overflow: hidden; transition: border-color 0.2s ease;" id="searchWrapper">
-                                <svg width="18" height="18" fill="#64748b" viewBox="0 0 16 16" style="position: absolute; left: 16px; z-index: 1; pointer-events: none;">
-                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                                </svg>
-                                <input type="text" id="foodSearchInput" placeholder="Search foods..."
-                                    style="flex: 1; background: transparent; border: none; color: #f1f5f9; padding: 14px 16px 14px 46px; font-size: 0.95rem; outline: none; font-family: 'Inter', sans-serif;">
-                                <button type="button" onclick="searchFoods()"
-                                    style="background: #a3e635; border: none; color: #0b0f17; padding: 10px 22px; margin: 5px; border-radius: 8px; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.03em; cursor: pointer; white-space: nowrap; transition: all 0.2s ease;"
-                                    onmouseover="this.style.background='#b8f54a'; this.style.transform='scale(1.02)';"
-                                    onmouseout="this.style.background='#a3e635'; this.style.transform='scale(1)';">
-                                    Search
-                                </button>
-                            </div>
-                        </div>
-
-                        <div id="foodResults" class="mb-3"></div>
-
-                        <div id="selectedFoods" class="d-flex flex-wrap align-items-start p-3 mb-4" style="min-height: 52px; background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; gap: 0.5rem;">
-                            <span id="noFoodsMsg" class="text-muted" style="font-size: 0.85rem; width: 100%; text-align: center; padding: 0.5rem 0;">Search and add foods above</span>
-                        </div>
-                        @error('foods')
-                            <div class="text-danger mb-3" style="font-size: 80%; margin-top: -12px;">{{ $message }}</div>
-                        @enderror
-
-                        <div class="form-group mb-0">
-                            <label for="description">Description</label>
-                            <textarea name="description" id="description" class="form-control @error('description') is-invalid @enderror" rows="2" placeholder="e.g. Post-workout meal">{{ old('description', '') }}</textarea>
-                            @error('description')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="card-footer text-right">
-                        <a href="{{ route('meal.day.show', [$meal->id, $day->id]) }}" class="btn btn-secondary mr-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Add to Day</button>
-                    </div>
-                </form>
-            </div>
+<div class="max-w-3xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-xl font-bold tracking-tight text-slate-800 dark:text-navy-50 sm:text-2xl">
+                Add Food Entry
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-navy-300">
+                Adding foods to <span class="font-semibold text-slate-700 dark:text-navy-100">{{ $day->name ?? 'Day' }}</span> in {{ $meal->name }}
+            </p>
         </div>
+        <a href="{{ route('meal.day.show', [$meal->id, $day->id]) }}"
+            class="text-xs font-semibold text-primary hover:text-primary-focus dark:text-accent-light dark:hover:text-accent">
+            &larr; Back to Day
+        </a>
     </div>
 
-    <script>
-        const selectedFoods = {};
+    <!-- Card -->
+    <div class="card rounded-xl border border-slate-150 bg-white shadow-soft dark:border-navy-600 dark:bg-navy-700">
+        <form action="{{ route('meal.day.entry.store', [$meal->id, $day->id]) }}" method="POST">
+            @csrf
+            <div class="p-5 sm:p-6 space-y-6">
+                <!-- Meal Type Selector -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-navy-200 mb-2">
+                        Meal Type <span class="text-error">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        @foreach(\App\Models\Meal\Type::get() as $type)
+                            <label class="relative flex cursor-pointer rounded-lg border border-slate-200 p-3 text-center transition-all hover:border-primary/50 dark:border-navy-500 dark:hover:border-accent/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5 dark:has-[:checked]:border-accent dark:has-[:checked]:bg-accent/10">
+                                <input type="radio"
+                                    name="meal_type"
+                                    value="{{ $type->id }}"
+                                    id="mealType{{ $type->id }}"
+                                    class="sr-only"
+                                    @if(old('meal_type') == $type->id) checked @endif
+                                    required>
+                                <span class="w-full text-xs font-semibold text-slate-700 dark:text-navy-100">{{ $type->name }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('meal_type')
+                        <p class="mt-1.5 text-xs text-error">{{ $message }}</p>
+                    @enderror
+                </div>
 
-        function searchFoods() {
-            const query = document.getElementById('foodSearchInput').value.trim();
-            if (!query) return;
+                <!-- Food Search Input -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-navy-200 mb-2">
+                        Search & Add Foods <span class="text-error">*</span>
+                    </label>
+                    <div class="flex space-x-2">
+                        <div class="relative flex-1">
+                            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 dark:text-navy-300">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </span>
+                            <input type="text"
+                                id="foodSearchInput"
+                                placeholder="Search by food name, brand, or ingredient..."
+                                class="form-input w-full rounded-lg border border-slate-300 bg-transparent pl-10 pr-3 py-2 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:text-navy-100 dark:hover:border-navy-400 dark:focus:border-accent">
+                        </div>
+                        <button type="button"
+                            onclick="searchFoods()"
+                            class="btn h-9 rounded-lg bg-primary px-4 text-xs font-semibold text-white shadow-soft hover:bg-primary-focus dark:bg-accent dark:hover:bg-accent-focus">
+                            Search
+                        </button>
+                    </div>
 
-            fetch('{{ route('food.search') }}?q=' + encodeURIComponent(query))
-                .then(r => r.json())
-                .then(foods => {
-                    const container = document.getElementById('foodResults');
-                    if (foods.length === 0) {
-                        container.innerHTML = '<p class="text-center text-muted py-3 mb-0">No foods found.</p>';
-                        return;
-                    }
-                    container.innerHTML = foods.map(f => {
-                        const selected = selectedFoods[f.id] !== undefined;
-                        return `
-                            <div class="food-result-item d-flex align-items-center px-3 py-2 mb-1"
-                                 style="background: ${selected ? 'rgba(163,230,53,0.06)' : 'rgba(30,41,59,0.3)'}; border-left: 3px solid ${selected ? '#a3e635' : 'transparent'}; border-radius: 0 8px 8px 0; cursor: pointer; transition: all 0.15s ease; overflow: hidden;"
-                                 data-id="${f.id}"
-                                 data-name="${f.name.replace(/'/g, "\\'")}"
-                                 onclick="toggleFoodResult(this)">
-                                <div class="flex-grow-1" style="min-width: 0;">
-                                    <div class="text-white font-weight-bold" style="font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                        ${f.name}
-                                        ${selected ? '<span class="badge ml-2" style="background: rgba(163,230,53,0.2); color: #a3e635; font-size: 0.65rem; font-weight: 600;">Selected</span>' : ''}
-                                    </div>
-                                    <div style="font-size: 0.72rem; color: #64748b;">
-                                        ${f.energy_kcal} kcal/100g
-                                        ${f.protein ? '<span class="mx-1" style="color: #38bdf8;">' + f.protein + 'g P</span>' : ''}
-                                        ${f.carbs ? '<span class="mx-1" style="color: #fbbf24;">' + f.carbs + 'g C</span>' : ''}
-                                        ${f.fat ? '<span class="mx-1" style="color: #fb7185;">' + f.fat + 'g F</span>' : ''}
-                                    </div>
-                                </div>
-                                <div class="food-result-action ml-3 flex-shrink-0" style="width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; font-size: 0.85rem; font-weight: 700;
-                                    ${selected ? 'background: rgba(239,68,68,0.15); color: #ef4444;' : 'background: rgba(163,230,53,0.08); color: #a3e635;'}">
-                                    ${selected ? '&times;' : '+'}
-                                </div>
-                            </div>`;
-                    }).join('');
-                });
-        }
+                    <!-- Search Results Dropdown/Box -->
+                    <div id="foodResults" class="mt-2 max-h-60 overflow-y-auto space-y-1.5 empty:hidden"></div>
+                </div>
 
-        function toggleFoodResult(el) {
-            const id = el.dataset.id;
-            const name = el.dataset.name;
-            if (selectedFoods[id]) {
-                removeFood(id);
-            } else {
-                addFood(id, name);
-            }
-            // Refresh results to update visual state
-            searchFoods();
-        }
+                <!-- Selected Foods Chips -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-navy-200 mb-2">
+                        Selected Foods
+                    </label>
+                    <div id="selectedFoods" class="min-h-14 rounded-lg border border-dashed border-slate-200 bg-slate-50 p-3 dark:border-navy-500 dark:bg-navy-800/40 flex flex-wrap items-center gap-2">
+                        <span id="noFoodsMsg" class="text-xs text-slate-400 dark:text-navy-300 mx-auto py-2">Search and select foods to add them to this entry</span>
+                    </div>
+                    @error('foods')
+                        <p class="mt-1.5 text-xs text-error">{{ $message }}</p>
+                    @enderror
+                </div>
 
-        function addFood(id, name) {
-            if (selectedFoods[id]) return;
-            selectedFoods[id] = name;
-            renderChips();
-        }
+                <!-- Description / Notes -->
+                <div>
+                    <label for="description" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-navy-200 mb-1.5">
+                        Notes / Portion Description (Optional)
+                    </label>
+                    <textarea name="description"
+                        id="description"
+                        rows="2"
+                        placeholder="e.g. Post-workout meal, 2 boiled eggs and 1 slice whole wheat bread"
+                        class="form-textarea w-full rounded-lg border border-slate-300 bg-transparent p-3 text-slate-800 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:text-navy-100 dark:hover:border-navy-400 dark:focus:border-accent @error('description') border-error @enderror">{{ old('description') }}</textarea>
+                    @error('description')
+                        <p class="mt-1 text-xs text-error">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
 
-        function removeFood(id) {
-            delete selectedFoods[id];
-            renderChips();
-        }
+            <!-- Card Footer -->
+            <div class="flex items-center justify-end space-x-3 border-t border-slate-150 px-5 py-4 dark:border-navy-600">
+                <a href="{{ route('meal.day.show', [$meal->id, $day->id]) }}"
+                    class="btn h-9 rounded-lg border border-slate-300 px-4 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-navy-500 dark:text-navy-200 dark:hover:bg-navy-600">
+                    Cancel
+                </a>
+                <button type="submit"
+                    class="btn h-9 rounded-lg bg-primary px-5 text-xs font-semibold text-white shadow-soft hover:bg-primary-focus dark:bg-accent dark:hover:bg-accent-focus">
+                    Add to Day
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
-        function renderChips() {
-            const container = document.getElementById('selectedFoods');
-            const ids = Object.keys(selectedFoods);
-            const msg = document.getElementById('noFoodsMsg');
+<script>
+    const selectedFoods = {};
 
-            if (ids.length === 0) {
-                msg.style.display = '';
-                container.querySelectorAll('.food-chip, .food-hidden-input').forEach(el => el.remove());
-                return;
-            }
+    function searchFoods() {
+        const query = document.getElementById('foodSearchInput').value.trim();
+        if (!query) return;
 
-            msg.style.display = 'none';
-            container.querySelectorAll('.food-chip, .food-hidden-input').forEach(el => el.remove());
-
-            ids.forEach(id => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'foods[]';
-                input.value = id;
-                input.className = 'food-hidden-input';
-                container.appendChild(input);
-
-                const chip = document.createElement('span');
-                chip.className = 'food-chip';
-                chip.style.cssText = 'display: inline-flex; align-items: center; background: rgba(163,230,53,0.12); border: 1px solid rgba(163,230,53,0.3); border-radius: 20px; padding: 0.45rem 0.7rem 0.45rem 1rem; font-size: 0.85rem; color: #a3e635; font-weight: 500; transition: all 0.2s ease;';
-                chip.innerHTML = `${selectedFoods[id]} <span onclick="event.stopPropagation(); removeFood(${id})" style="margin-left: 0.5rem; cursor: pointer; width: 20px; height: 20px; border-radius: 50%; background: rgba(239,68,68,0.2); color: #ef4444; display: inline-flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1; transition: all 0.15s ease;">&times;</span>`;
-                container.appendChild(chip);
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('foodSearchInput').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    searchFoods();
+        fetch('{{ route('food.search') }}?q=' + encodeURIComponent(query))
+            .then(r => r.json())
+            .then(foods => {
+                const container = document.getElementById('foodResults');
+                if (foods.length === 0) {
+                    container.innerHTML = '<p class="text-center text-xs text-slate-400 py-3 dark:text-navy-300">No foods found matching query.</p>';
+                    return;
                 }
+                container.innerHTML = foods.map(f => {
+                    const selected = selectedFoods[f.id] !== undefined;
+                    return `
+                        <div class="flex items-center justify-between rounded-lg border border-slate-200 p-2.5 transition-colors cursor-pointer dark:border-navy-600 ${selected ? 'bg-primary/10 border-primary/30 dark:bg-accent/15 dark:border-accent/40' : 'bg-white hover:bg-slate-50 dark:bg-navy-700 dark:hover:bg-navy-600'}"
+                             data-id="${f.id}"
+                             data-name="${f.name.replace(/'/g, "\\'")}"
+                             onclick="toggleFoodResult(this)">
+                            <div class="min-w-0 pr-3">
+                                <div class="text-xs font-bold text-slate-800 dark:text-navy-100 truncate flex items-center space-x-2">
+                                    <span>${f.name}</span>
+                                    ${selected ? '<span class="badge rounded bg-primary/20 px-1.5 py-0.5 text-tiny font-bold text-primary dark:bg-accent/30 dark:text-accent-light">Added</span>' : ''}
+                                </div>
+                                <div class="text-tiny text-slate-400 dark:text-navy-300 mt-0.5 space-x-1.5">
+                                    <span>${f.energy_kcal} kcal</span>
+                                    ${f.protein ? '<span class="text-info font-medium">&bull; ' + f.protein + 'g P</span>' : ''}
+                                    ${f.carbs ? '<span class="text-warning font-medium">&bull; ' + f.carbs + 'g C</span>' : ''}
+                                    ${f.fat ? '<span class="text-error font-medium">&bull; ' + f.fat + 'g F</span>' : ''}
+                                </div>
+                            </div>
+                            <button type="button" class="btn size-7 shrink-0 rounded-full p-0 text-xs font-bold ${selected ? 'bg-error/15 text-error hover:bg-error hover:text-white' : 'bg-primary/15 text-primary hover:bg-primary hover:text-white dark:bg-accent/20 dark:text-accent-light dark:hover:bg-accent'}">
+                                ${selected ? '&times;' : '+'}
+                            </button>
+                        </div>`;
+                }).join('');
             });
-        });
-    </script>
+    }
 
-    <style>
-        #foodResults {
-            max-height: 260px;
-            overflow-y: auto;
-            overflow-x: hidden;
+    function toggleFoodResult(el) {
+        const id = el.dataset.id;
+        const name = el.dataset.name;
+        if (selectedFoods[id]) {
+            removeFood(id);
+        } else {
+            addFood(id, name);
         }
-        .food-result-item:hover {
-            background: rgba(30,41,59,0.55) !important;
-            border-left-color: rgba(163,230,53,0.4) !important;
-            padding-left: 1.2rem !important;
+        searchFoods();
+    }
+
+    function addFood(id, name) {
+        if (selectedFoods[id]) return;
+        selectedFoods[id] = name;
+        renderChips();
+    }
+
+    function removeFood(id) {
+        delete selectedFoods[id];
+        renderChips();
+    }
+
+    function renderChips() {
+        const container = document.getElementById('selectedFoods');
+        const ids = Object.keys(selectedFoods);
+        const msg = document.getElementById('noFoodsMsg');
+
+        if (ids.length === 0) {
+            msg.style.display = '';
+            container.querySelectorAll('.food-chip, .food-hidden-input').forEach(el => el.remove());
+            return;
         }
-        .day-selector-item input[type="radio"] {
-            position: absolute !important;
-            opacity: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            cursor: pointer !important;
-            z-index: 2 !important;
-            left: 0 !important;
-            top: 0 !important;
-        }
-        .meal-type-grid {
-            display: flex !important;
-            gap: 0.75rem !important;
-        }
-        .meal-type-grid .day-selector-item {
-            flex: 1 !important;
-        }
-        .day-selector-item input[type="radio"]:checked + label {
-            background: #1a2e1a !important;
-            border-color: #a3e635 !important;
-            color: #a3e635 !important;
-            box-shadow: 0 0 12px rgba(163, 230, 53, 0.1) !important;
-        }
-    </style>
+
+        msg.style.display = 'none';
+        container.querySelectorAll('.food-chip, .food-hidden-input').forEach(el => el.remove());
+
+        ids.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'foods[]';
+            input.value = id;
+            input.className = 'food-hidden-input';
+            container.appendChild(input);
+
+            const chip = document.createElement('span');
+            chip.className = 'food-chip inline-flex items-center space-x-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary dark:border-accent/40 dark:bg-accent/15 dark:text-accent-light';
+            chip.innerHTML = `<span>${selectedFoods[id]}</span><button type="button" onclick="event.stopPropagation(); removeFood(${id})" class="size-4 shrink-0 rounded-full text-slate-400 hover:text-error dark:text-navy-300 font-bold leading-none">&times;</button>`;
+            container.appendChild(chip);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('foodSearchInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchFoods();
+            }
+        });
+    });
+</script>
 @endsection

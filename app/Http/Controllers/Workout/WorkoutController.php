@@ -42,8 +42,6 @@ class WorkoutController extends Controller
         Validator::make($request->all(),
             [
                 'name' => 'required',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after:start_date',
                 'start_time' => 'required',
                 'end_time' => 'required',
                 'day' => 'required|array'
@@ -53,8 +51,6 @@ class WorkoutController extends Controller
         $workout = new Workout();
         $workout->user_id = Auth::id();
         $workout->name = $request->name;
-        $workout->start_date = $request->start_date;
-        $workout->end_date = $request->end_date;
         $workout->start_time = $request->start_time;
         $workout->end_time = $request->end_time;
         $workout->save();
@@ -108,8 +104,6 @@ class WorkoutController extends Controller
         Validator::make($request->all(),
             [
                 'name' => 'required',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after:start_date',
                 'day' => 'required|exists:day,id',
                 'start_time' => 'required',
                 'end_time' => 'required'
@@ -117,8 +111,6 @@ class WorkoutController extends Controller
         )->validate();
 
         $workout->name = $request->name;
-        $workout->start_date = $request->start_date;
-        $workout->end_date = $request->end_date;
         $workout->start_time = $request->start_time;
         $workout->end_time = $request->end_time;
         $workout->save();

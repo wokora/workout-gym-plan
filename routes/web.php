@@ -28,10 +28,13 @@ Route::middleware(['auth', 'sso.verify'])->group(function(){
     Route::resource('meal.day', \App\Http\Controllers\Meal\DayController::class);
     Route::resource('meal.day.entry', \App\Http\Controllers\Meal\EntryController::class);
     Route::resource('exercise', \App\Http\Controllers\Exercise\ExerciseController::class);
+    Route::get('muscle-groups', [\App\Http\Controllers\MuscleGroupController::class, 'index'])->name('muscle-groups.index');
     Route::resource('body', \App\Http\Controllers\Body\BodyController::class);
     Route::get('vital/export', [\App\Http\Controllers\Vital\VitalController::class, 'export'])->name('vital.export');
     Route::post('vital/import', [\App\Http\Controllers\Vital\VitalController::class, 'import'])->name('vital.import');
     Route::resource('vital', \App\Http\Controllers\Vital\VitalController::class);
+    Route::get('profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::get('food/search', [\App\Http\Controllers\Food\FoodController::class, 'search'])->name('food.search');
 });
 

@@ -77,6 +77,7 @@ class SSOAuthenticationTest extends TestCase
             ], 200),
             'http://sso.test/api/oauth/user' => Http::response([
                 'id' => 123,
+                'uuid' => 'sso-uuid-12345',
                 'first_name' => 'John',
                 'surname' => 'Doe',
                 'email' => 'john.doe@example.com',
@@ -88,16 +89,88 @@ class SSOAuthenticationTest extends TestCase
         $response->assertRedirect('/');
 
         $this->assertDatabaseHas('user', [
+            'uuid' => 'sso-uuid-12345',
             'name' => 'John Doe',
             'email' => 'john.doe@example.com',
         ]);
 
-        $user = User::where('email', 'john.doe@example.com')->first();
+        $user = User::where('uuid', 'sso-uuid-12345')->first();
         $this->assertNotNull($user);
         $this->assertAuthenticatedAs($user);
 
         // Accessing home now works because we are authenticated
         $this->get('/')->assertStatus(200);
+    }
+
+    public function test_sso_login_matches_existing_user_by_uuid_even_if_email_changed()
+    {
+        $existingUser = User::create([
+            'uuid' => 'sso-uuid-existing-1',
+            'name' => 'Original Name',
+            'email' => 'old.email@example.com',
+            'password' => bcrypt('secret'),
+        ]);
+
+        session(['oauth_state' => 'expected-state']);
+
+        Http::fake([
+            'http://sso.test/api/oauth/token' => Http::response([
+                'access_token' => 'dummy-access-token',
+                'refresh_token' => 'dummy-refresh-token',
+            ], 200),
+            'http://sso.test/api/oauth/user' => Http::response([
+                'id' => 456,
+                'uuid' => 'sso-uuid-existing-1',
+                'first_name' => 'Updated',
+                'surname' => 'Name',
+                'email' => 'new.email@example.com',
+            ], 200),
+        ]);
+
+        $response = $this->get('/callback?code=valid-code&state=expected-state');
+
+        $response->assertRedirect('/');
+
+        // Total count should remain 1 (no duplicate user created)
+        $this->assertEquals(1, User::where('uuid', 'sso-uuid-existing-1')->count());
+
+        $existingUser->refresh();
+        $this->assertEquals('new.email@example.com', $existingUser->email);
+        $this->assertEquals('Updated Name', $existingUser->name);
+        $this->assertAuthenticatedAs($existingUser);
+    }
+
+    public function test_sso_login_links_existing_user_by_email_if_uuid_was_not_set()
+    {
+        // User created before SSO or without UUID
+        $user = User::factory()->create([
+            'uuid' => null,
+            'email' => 'preexisting@example.com',
+        ]);
+
+        session(['oauth_state' => 'expected-state']);
+
+        Http::fake([
+            'http://sso.test/api/oauth/token' => Http::response([
+                'access_token' => 'dummy-access-token',
+                'refresh_token' => 'dummy-refresh-token',
+            ], 200),
+            'http://sso.test/api/oauth/user' => Http::response([
+                'id' => 789,
+                'uuid' => 'new-linked-uuid-999',
+                'first_name' => 'Linked',
+                'surname' => 'User',
+                'email' => 'preexisting@example.com',
+            ], 200),
+        ]);
+
+        $response = $this->get('/callback?code=valid-code&state=expected-state');
+
+        $response->assertRedirect('/');
+
+        $user->refresh();
+        $this->assertEquals('new-linked-uuid-999', $user->uuid);
+        $this->assertAuthenticatedAs($user);
     }
 
     public function test_logout_redirects_to_sso_logout()

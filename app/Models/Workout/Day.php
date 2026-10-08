@@ -12,7 +12,7 @@ class Day extends Model
 
     protected $table = 'workout_day';
 
-    protected $fillable = ['day_id', 'number'];
+    protected $fillable = ['workout_id', 'day_id', 'number'];
 
     public function day(){
         return $this->belongsTo(\App\Models\Day\Day::class, 'day_id');
@@ -28,5 +28,24 @@ class Day extends Model
 
     public function workout_exercise(){
         return $this->hasMany( Exercise::class, 'workout_day_id' );
+    }
+
+    /**
+     * Get unique muscle group names targeted across this day's exercises.
+     *
+     * @return array<string>
+     */
+    public function targetedMuscleNames(): array
+    {
+        return $this->workout_exercise()
+            ->with('exercise.body_section.body_section')
+            ->get()
+            ->flatMap(function ($we) {
+                return $we->exercise?->targetedMuscleNames() ?? [];
+            })
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 }

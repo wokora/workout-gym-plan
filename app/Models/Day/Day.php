@@ -11,4 +11,6 @@ class Day extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'day';
+
+    protected $fillable = ['name', 'number'];
 }

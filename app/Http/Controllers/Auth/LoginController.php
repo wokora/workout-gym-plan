@@ -117,27 +117,55 @@ class LoginController extends Controller
         }
 
         $userData = $userResponse->json();
+        $ssoUuid = $userData['uuid'] ?? null;
         $email = $userData['email'] ?? null;
 
-        if (!$email) {
-            return redirect()->route('login')->withErrors(['oauth' => 'User email not returned from SSO server.']);
+        if (!$ssoUuid && !$email) {
+            return redirect()->route('login')->withErrors(['oauth' => 'User identity not returned from SSO server.']);
         }
 
-        // Find or create local user
-        $firstName = $userData['first_name'] ?? '';
-        $surname = $userData['surname'] ?? '';
-        $name = trim($firstName . ' ' . $surname);
+        // Determine user display name
+        $name = $userData['name'] ?? null;
         if (empty($name)) {
+            $firstName = $userData['first_name'] ?? '';
+            $surname = $userData['surname'] ?? '';
+            $name = trim($firstName . ' ' . $surname);
+        }
+        if (empty($name) && $email) {
             $name = explode('@', $email)[0];
         }
 
-        $user = \App\Models\User::updateOrCreate(
-            ['email' => $email],
-            [
+        // 1. Primary lookup: Check if user exists by SSO UUID
+        $user = null;
+        if ($ssoUuid) {
+            $user = \App\Models\User::where('uuid', $ssoUuid)->first();
+        }
+
+        // 2. Fallback lookup: Check if user exists by email (account linking for existing records)
+        if (!$user && $email) {
+            $user = \App\Models\User::where('email', $email)->first();
+        }
+
+        // 3. Update existing user or create new user
+        if ($user) {
+            $updateData = [
+                'name' => $name ?: $user->name,
+            ];
+            if ($ssoUuid) {
+                $updateData['uuid'] = $ssoUuid;
+            }
+            if ($email) {
+                $updateData['email'] = $email;
+            }
+            $user->update($updateData);
+        } else {
+            $user = \App\Models\User::create([
+                'uuid' => $ssoUuid,
                 'name' => $name,
+                'email' => $email,
                 'password' => bcrypt(Str::random(16)),
-            ]
-        );
+            ]);
+        }
 
         session(['sso_access_token' => $accessToken]);
 

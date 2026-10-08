@@ -1,28 +1,37 @@
 @extends('layouts.auth')
 
+@section('title', 'Sign In')
+
 @section('content')
-            <div class="card">
-                <div class="card-header text-center pb-2 pt-3 font-weight-bold" style="font-size: 1.5rem; letter-spacing: 0.05em;">
-                    SIGN <span class="text-primary text-glow">IN</span>
-                </div>
+    <div class="card rounded-2xl border border-slate-150 bg-white p-6 shadow-soft dark:border-navy-600 dark:bg-navy-700 dark:shadow-soft-dark sm:p-8">
+        <div class="text-center">
+            <h2 class="text-2xl font-bold tracking-tight text-slate-800 dark:text-navy-100 uppercase">
+                Sign <span class="text-primary dark:text-accent-light">In</span>
+            </h2>
+            <p class="mt-2 text-sm text-slate-500 dark:text-navy-300">
+                Please authenticate via the secure Single Sign-On portal to access your account.
+            </p>
+        </div>
 
-                @if ($errors->has('oauth'))
-                    <div class="alert alert-danger mx-3 mt-3 mb-0 text-center" role="alert" style="font-size: 0.9rem;">
-                        {{ $errors->first('oauth') }}
-                    </div>
-                @endif
-
-                <div class="card-body text-center py-5">
-                    <p class="text-muted mb-4" style="font-size: 0.95rem;">
-                        Please authenticate via the secure Single Sign-On portal to access your account.
-                    </p>
-
-                    <a href="{{ route('login.sso') }}" class="btn btn-primary btn-block py-2.5 d-flex align-items-center justify-content-center" style="font-weight: 600; letter-spacing: 0.05em; font-size: 1rem; border-radius: 0.375rem; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);">
-                        <svg class="mr-2" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        </svg>
-                        SIGN IN WITH SSO
-                    </a>
+        @if ($errors->has('oauth'))
+            <div class="alert mt-4 flex rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-xs text-error sm:text-sm" role="alert">
+                <div class="flex items-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{{ $errors->first('oauth') }}</span>
                 </div>
             </div>
+        @endif
+
+        <div class="mt-8">
+            <a href="{{ route('login.sso') }}"
+                class="btn h-12 w-full space-x-2 rounded-xl bg-primary text-base font-semibold text-white shadow-soft transition-all hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90 flex items-center justify-center">
+                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span>SIGN IN WITH SSO</span>
+            </a>
+        </div>
+    </div>
 @endsection

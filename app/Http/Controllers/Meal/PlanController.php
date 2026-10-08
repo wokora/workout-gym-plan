@@ -42,8 +42,6 @@ class PlanController extends Controller
         Validator::make($request->all(),
             [
                 'name' => 'required',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after:start_date',
                 'day' => 'required|array'
             ]
         )->validate();
@@ -51,8 +49,6 @@ class PlanController extends Controller
         $plan = new Plan();
         $plan->user_id = Auth::id();
         $plan->name = $request->name;
-        $plan->start_date = $request->start_date;
-        $plan->end_date = $request->end_date;
         $plan->save();
 
         if($request->day) {
@@ -104,15 +100,11 @@ class PlanController extends Controller
         Validator::make($request->all(),
             [
                 'name' => 'required',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after:start_date',
                 'day' => 'required|exists:day,id'
             ]
         )->validate();
 
         $meal->name = $request->name;
-        $meal->start_date = $request->start_date;
-        $meal->end_date = $request->end_date;
         $meal->save();
 
         $meal->meal_plan_day()->whereNotIn('day_id', $request->day)->delete();

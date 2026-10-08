@@ -23,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        \Illuminate\Support\Facades\Blade::directive('vite', function ($expression) {
+            return "<?php echo \App\Support\Vite::assets({$expression}); ?>";
+        });
     }
 }

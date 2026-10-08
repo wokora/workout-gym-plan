@@ -168,8 +168,6 @@ class DefaultRoutineSeeder extends Seeder
                         'user_id' => $user->id,
                         'name' => $routine['name']
                     ], [
-                        'start_date' => date('Y-m-d'),
-                        'end_date' => date('Y-m-d', strtotime('+12 weeks')),
                         'start_time' => $routine['start_time'],
                         'end_time' => $routine['end_time']
                     ]);

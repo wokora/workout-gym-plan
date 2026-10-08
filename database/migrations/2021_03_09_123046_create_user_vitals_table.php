@@ -16,11 +16,15 @@ class CreateUserVitalsTable extends Migration
         Schema::create('user_vitals', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->decimal('height',13, 2);
-            $table->decimal('weight',13, 2);
+            $table->unsignedBigInteger('vital_id');
+            $table->decimal('value', 13, 2);
             $table->date('date_measured');
             $table->timestamps();
             $table->softDeletes();
+
+            $table->foreign('user_id')->references('id')->on('user')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('vital_id')->references('id')->on('vitals')->onDelete('cascade')->onUpdate('cascade');
+            $table->index(['user_id', 'vital_id', 'date_measured']);
         });
     }
 

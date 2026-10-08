@@ -3,54 +3,65 @@
 @section('title', 'Meal Plans')
 
 @section('content')
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-                <div>
-                    <h2 class="text-white mb-0">MEAL PLANS</h2>
-                    <p class="text-muted mb-0">Select or manage your structured nutrition plans.</p>
-                </div>
-                <div>
-                    <a href="{{ route('meal.create') }}" class="btn btn-primary d-inline-flex align-items-center mt-2 mt-sm-0">
-                        <svg class="mr-2" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                        </svg>
-                        Create Meal Plan
-                    </a>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-header">ALL MEAL PLANS</div>
-
-                <div class="list-group list-group-flush">
-                    @forelse( \App\Models\Meal\Plan::get() as $plan )
-                        <a href="{{ route('meal.show', $plan->id) }}" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center">
-                            <div>
-                                <h5 class="text-white font-weight-bold mb-1">{{ $plan->name }}</h5>
-                                <span class="text-muted" style="font-size: 0.85rem;">
-                                    {{ \Carbon\Carbon::parse($plan->start_date)->format('M d') }} - {{ \Carbon\Carbon::parse($plan->end_date)->format('M d, Y') }}
-                                </span>
-                            </div>
-                            <span class="btn btn-outline-primary btn-sm py-1 px-3 d-inline-flex align-items-center">
-                                Configure
-                                <svg class="ml-2" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-                                </svg>
-                            </span>
-                        </a>
-                    @empty
-                        <div class="text-center py-5 text-muted">
-                            <svg class="mb-3" width="40" height="40" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
-                            </svg>
-                            <h5>No meal plans registered</h5>
-                            <p class="mb-0">Get started by creating your first meal plan.</p>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col justify-between space-y-3 sm:flex-row sm:items-center sm:space-y-0">
+        <div>
+            <h2 class="text-xl font-bold tracking-tight text-slate-800 dark:text-navy-50 sm:text-2xl uppercase">
+                Meal Plans
+            </h2>
+            <p class="text-sm text-slate-500 dark:text-navy-300">
+                Select or manage your structured nutrition plans.
+            </p>
+        </div>
+        <div>
+            <a href="{{ route('meal.create') }}"
+                class="btn space-x-2 rounded-xl bg-primary px-5 py-2.5 font-semibold text-white shadow-soft hover:bg-primary-focus dark:bg-accent dark:hover:bg-accent-focus flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Create Meal Plan</span>
+            </a>
         </div>
     </div>
+
+    <!-- Plan List Card -->
+    <div class="card rounded-xl border border-slate-150 bg-white shadow-soft dark:border-navy-600 dark:bg-navy-700">
+        <div class="border-b border-slate-150 px-5 py-4 dark:border-navy-600 font-semibold text-xs uppercase tracking-wider text-slate-600 dark:text-navy-200">
+            All Meal Plans
+        </div>
+
+        <div class="divide-y divide-slate-150 dark:divide-navy-600">
+            @forelse(\App\Models\Meal\Plan::get() as $plan)
+                <div class="flex flex-col justify-between p-5 transition-colors hover:bg-slate-50 sm:flex-row sm:items-center dark:hover:bg-navy-800/50">
+                    <div class="mb-3 sm:mb-0">
+                        <a href="{{ route('meal.show', $plan->id) }}" class="text-base font-bold text-slate-800 hover:text-primary dark:text-navy-100 dark:hover:text-accent-light">
+                            {{ $plan->name }}
+                        </a>
+                        <p class="mt-1 text-xs text-slate-400 dark:text-navy-300">
+                            {{ $plan->meal_plan_day()->count() }} scheduled active days
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <a href="{{ route('meal.show', $plan->id) }}"
+                            class="btn h-8 rounded-lg border border-primary/30 px-3 text-xs font-semibold text-primary hover:bg-primary/10 dark:border-accent/30 dark:text-accent-light dark:hover:bg-accent/10 flex items-center space-x-1">
+                            <span>Configure</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            @empty
+                <div class="p-12 text-center">
+                    <svg class="mx-auto size-12 text-slate-300 dark:text-navy-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <h4 class="mt-3 text-base font-semibold text-slate-700 dark:text-navy-100">No meal plans registered</h4>
+                    <p class="mt-1 text-xs text-slate-400 dark:text-navy-300">Get started by creating your first meal plan.</p>
+                </div>
+            @endforelse
+        </div>
+    </div>
+</div>
 @endsection

@@ -12,7 +12,7 @@ class Body extends Model
 
     protected $table = 'exercise_body_section';
 
-    protected $fillable = ['body_section_id'];
+    protected $fillable = ['body_section_id', 'exercise_id'];
 
     public function body_section()
     {

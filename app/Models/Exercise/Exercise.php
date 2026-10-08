@@ -12,7 +12,26 @@ class Exercise extends Model
 
     protected $table = 'exercise';
 
+    protected $fillable = ['name', 'description'];
+
     public function body_section(){
         return $this->hasMany(Body::class, 'exercise_id');
+    }
+
+    /**
+     * Get unique muscle group names targeted by this exercise.
+     *
+     * @return array<string>
+     */
+    public function targetedMuscleNames(): array
+    {
+        return $this->body_section()
+            ->with('body_section')
+            ->get()
+            ->map(fn($item) => $item->body_section->name ?? null)
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 }

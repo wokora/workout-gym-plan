@@ -12,7 +12,7 @@ class Exercise extends Model
 
     protected $table = 'workout_day_exercise';
 
-    protected $fillable = ['exercise_id' ,'number','sets','reps'];
+    protected $fillable = ['workout_day_id', 'exercise_id', 'number', 'sets', 'reps'];
 
     public function workout(){
         return $this->belongsTo(Workout::class, 'workout_id');

@@ -3,64 +3,55 @@
 @section('title', 'Create Meal Plan')
 
 @section('content')
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">CREATE NEW MEAL PLAN</div>
-
-                <form action="{{ route('meal.store') }}" method="post">
-                    @csrf
-                    <div class="card-body">
-                        <div class="form-group mb-4">
-                            <label for="name">Meal Plan Name</label>
-                            <input type="text" name="name" value="{{ old('name', '') }}" id="name" class="form-control @error('name') is-invalid @enderror" placeholder="e.g. Weight Loss Plan, Bulk Plan">
-                            @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="form-row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-4">
-                                    <label for="start_date">Start Date</label>
-                                    <input type="date" name="start_date" value="{{ old('start_date', '') }}" id="start_date" class="form-control @error('start_date') is-invalid @enderror">
-                                    @error('start_date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-4">
-                                    <label for="end_date">End Date</label>
-                                    <input type="date" name="end_date" value="{{ old('end_date', '') }}" id="end_date" class="form-control @error('end_date') is-invalid @enderror">
-                                    @error('end_date')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group mb-2">
-                            <label>Target Days</label>
-                            <div class="day-selector-grid">
-                                @foreach(\App\Models\Day\Day::get() as $day)
-                                    <div class="day-selector-item">
-                                        <input type="checkbox" value="{{ $day->id }}" name="day[{{ $day->id }}]" id="customCheck{{ $day->id }}" @if(is_array(old('day')) && in_array($day->id, old('day'))) checked @endif>
-                                        <label for="customCheck{{ $day->id }}">{{ $day->name }}</label>
-                                    </div>
-                                @endforeach
-                            </div>
-                            @error('day')
-                                <div class="text-danger mt-2" style="font-size: 80%">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="card-footer text-right">
-                        <a href="{{ route('meal.index') }}" class="btn btn-secondary mr-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Create Plan</button>
-                    </div>
-                </form>
-            </div>
+<div class="space-y-6">
+    <div class="card rounded-xl border border-slate-150 bg-white shadow-soft dark:border-navy-600 dark:bg-navy-700">
+        <div class="border-b border-slate-150 px-5 py-4 dark:border-navy-600 font-semibold text-xs uppercase tracking-wider text-slate-600 dark:text-navy-200">
+            Create New Meal Plan
         </div>
+
+        <form action="{{ route('meal.store') }}" method="post" class="p-5 sm:p-6 space-y-5">
+            @csrf
+            <div>
+                <label for="name" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-navy-300 mb-1.5">Meal Plan Name</label>
+                <input type="text" name="name" value="{{ old('name', '') }}" id="name"
+                    class="form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:text-navy-100 dark:hover:border-navy-400 dark:focus:border-accent @error('name') border-error @enderror"
+                    placeholder="e.g. Weight Loss Plan, Bulk Plan">
+                @error('name')
+                    <span class="mt-1 block text-tiny-plus text-error">{{ $message }}</span>
+                @enderror
+            </div>
+
+
+
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-navy-300 mb-2">Target Days</label>
+                <div class="grid grid-cols-2 gap-2 sm:grid-cols-7">
+                    @foreach(\App\Models\Day\Day::get() as $day)
+                        <div>
+                            <input type="checkbox" value="{{ $day->id }}" name="day[{{ $day->id }}]" id="customCheck{{ $day->id }}"
+                                class="peer hidden"
+                                @if(is_array(old('day')) && in_array($day->id, old('day'))) checked @endif>
+                            <label for="customCheck{{ $day->id }}"
+                                class="block cursor-pointer select-none rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-center text-xs font-semibold text-slate-600 transition-all hover:bg-slate-100 peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white dark:border-navy-600 dark:bg-navy-800 dark:text-navy-200 dark:peer-checked:border-accent dark:peer-checked:bg-accent dark:peer-checked:text-white">
+                                {{ $day->name }}
+                            </label>
+                        </div>
+                    @endforeach
+                </div>
+                @error('day')
+                    <span class="mt-2 block text-tiny-plus text-error">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-150 dark:border-navy-600">
+                <a href="{{ route('meal.index') }}" class="btn h-9 rounded-lg border border-slate-300 px-4 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-navy-500 dark:text-navy-200 dark:hover:bg-navy-600">
+                    Cancel
+                </a>
+                <button type="submit" class="btn h-9 rounded-lg bg-primary px-5 text-xs font-semibold text-white hover:bg-primary-focus dark:bg-accent dark:hover:bg-accent-focus">
+                    Create Plan
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 @endsection

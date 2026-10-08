@@ -11,4 +11,6 @@ class Body extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'body_section';
+
+    protected $fillable = ['name', 'description'];
 }

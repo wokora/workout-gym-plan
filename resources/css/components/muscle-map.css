@@ -1,0 +1,79 @@
+/* Muscle Map Component Styles */
+.muscle-map-container {
+    position: relative;
+    user-select: none;
+}
+
+.muscle-map-svg {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.04));
+}
+
+/* Background human silhouette / lines */
+.muscle-map-svg .muscle-silhouette {
+    fill: #e2e8f0; /* slate-200 */
+    stroke: #cbd5e1; /* slate-300 */
+    stroke-width: 0.5px;
+    pointer-events: none;
+    transition: fill 0.3s ease, stroke 0.3s ease;
+}
+
+:is(.dark) .muscle-map-svg .muscle-silhouette {
+    fill: #1e293b; /* slate-800 */
+    stroke: #334155; /* slate-700 */
+}
+
+/* Individual muscle groups */
+.muscle-map-svg .muscle-path {
+    fill: #cbd5e1; /* slate-300 */
+    stroke: #94a3b8; /* slate-400 */
+    stroke-width: 0.75px;
+    cursor: pointer;
+    transition: fill 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                stroke 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                filter 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:is(.dark) .muscle-map-svg .muscle-path {
+    fill: #334155; /* slate-700 */
+    stroke: #475569; /* slate-600 */
+}
+
+/* Muscle Highlighted State */
+.muscle-map-svg .muscle-path.is-highlighted {
+    fill: #4f46e5; /* indigo-600 primary */
+    stroke: #3730a3;
+    stroke-width: 1.25px;
+    filter: drop-shadow(0 0 8px rgba(79, 70, 229, 0.55));
+}
+
+:is(.dark) .muscle-map-svg .muscle-path.is-highlighted {
+    fill: #6366f1; /* indigo-500 / accent */
+    stroke: #c7d2fe;
+    filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.7));
+}
+
+/* Muscle Hovered State */
+.muscle-map-svg .muscle-path.is-hovered,
+.muscle-map-container[data-interactive="true"] .muscle-map-svg .muscle-path:hover {
+    fill: #818cf8; /* accent-light */
+    stroke: #4f46e5;
+    stroke-width: 1.5px;
+    filter: drop-shadow(0 0 10px rgba(129, 140, 248, 0.65));
+}
+
+:is(.dark) .muscle-map-svg .muscle-path.is-hovered,
+:is(.dark) .muscle-map-container[data-interactive="true"] .muscle-map-svg .muscle-path:hover {
+    fill: #38bdf8; /* sky-400 */
+    stroke: #bae6fd;
+    stroke-width: 1.5px;
+    filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.7));
+}
+
+/* Dim other muscles when one is specifically selected */
+.muscle-map-container.has-focus .muscle-map-svg .muscle-path:not(.is-highlighted):not(.is-hovered) {
+    opacity: 0.4;
+}

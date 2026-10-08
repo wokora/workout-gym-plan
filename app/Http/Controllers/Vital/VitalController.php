@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Vital;
 
 use App\Http\Controllers\Controller;
+use App\Models\Vital\UserVital;
 use App\Models\Vital\Vital;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
 class VitalController extends Controller
 {
@@ -17,11 +17,31 @@ class VitalController extends Controller
      */
     public function index()
     {
-        $vitals = Auth::user()->vitals()->orderBy('date_measured', 'DESC');
-        $all_vitals = $vitals->get();
-        $current_vital = $vitals->first();
+        $user = Auth::user();
+        $vitals = $user->vitals()
+            ->with(['vital.unit', 'vital.inputType'])
+            ->orderBy('date_measured', 'DESC')
+            ->orderBy('id', 'DESC')
+            ->get();
 
-        return view('vitals.index', ['vitals' => $all_vitals, 'current_vital' => $current_vital]);
+        $latestWeight = $user->latestVital('weight');
+        $latestHeight = $user->latestVital('height');
+        $latestHeartRate = $user->latestVital('heart_rate');
+        $latestBpSystolic = $user->latestVital('bp_systolic');
+        $latestBpDiastolic = $user->latestVital('bp_diastolic');
+        $latestBodyFat = $user->latestVital('body_fat');
+        $bmi = $user->bmi();
+
+        return view('vitals.index', [
+            'vitals' => $vitals,
+            'latestWeight' => $latestWeight,
+            'latestHeight' => $latestHeight,
+            'latestHeartRate' => $latestHeartRate,
+            'latestBpSystolic' => $latestBpSystolic,
+            'latestBpDiastolic' => $latestBpDiastolic,
+            'latestBodyFat' => $latestBodyFat,
+            'bmi' => $bmi,
+        ]);
     }
 
     /**
@@ -31,7 +51,21 @@ class VitalController extends Controller
      */
     public function create()
     {
-        return view('vitals.create');
+        $activeVitals = Vital::with(['unit', 'inputType'])
+            ->where('is_active', true)
+            ->orderBy('order')
+            ->get();
+
+        $latestValues = [];
+        foreach ($activeVitals as $v) {
+            $latest = Auth::user()->latestVital($v->slug);
+            $latestValues[$v->id] = $latest ? $latest->value : null;
+        }
+
+        return view('vitals.create', [
+            'vitals' => $activeVitals,
+            'latestValues' => $latestValues,
+        ]);
     }
 
     /**
@@ -42,83 +76,128 @@ class VitalController extends Controller
      */
     public function store(Request $request)
     {
-        Validator::make($request->all(),
-            [
-                'date' => 'required|date',
-                'weight' => 'required|numeric',
-                'height' => 'required|numeric'
-            ]
-        )->validate();
-
-        Auth::user()->vitals()->create([
-            'weight' => $request->weight,
-            'height' => $request->height,
-            'date_measured' => $request->date
+        $request->validate([
+            'date' => 'required|date',
         ]);
 
-        return redirect()->route('vital.index')->with('success', 'Vital Recorded');
+        // Single vital submitted via radio button
+        if ($request->has('vital_id')) {
+            $request->validate([
+                'vital_id' => 'required|exists:vitals,id',
+                'value' => 'required|numeric',
+            ]);
+
+            Auth::user()->vitals()->updateOrCreate(
+                [
+                    'vital_id' => $request->vital_id,
+                    'date_measured' => $request->date,
+                ],
+                [
+                    'value' => $request->value,
+                ]
+            );
+
+            if ($request->input('action') === 'save_and_new') {
+                return redirect()->route('vital.create')->with('success', 'Vital recorded successfully. Ready to record another.');
+            }
+
+            return redirect()->route('vital.index')->with('success', 'Vital recorded successfully.');
+        }
+
+        // Fallback: batch vitals array
+        if ($request->has('vitals')) {
+            $request->validate([
+                'vitals' => 'required|array',
+            ]);
+
+            $saved = 0;
+            foreach ($request->input('vitals', []) as $vitalId => $value) {
+                if ($value !== null && $value !== '') {
+                    Auth::user()->vitals()->updateOrCreate(
+                        [
+                            'vital_id' => $vitalId,
+                            'date_measured' => $request->date,
+                        ],
+                        [
+                            'value' => $value,
+                        ]
+                    );
+                    $saved++;
+                }
+            }
+
+            if ($saved === 0) {
+                return back()->withErrors(['value' => 'Please enter at least one vital measurement.'])->withInput();
+            }
+
+            return redirect()->route('vital.index')->with('success', 'Vitals recorded successfully.');
+        }
+
+        return back()->withErrors(['value' => 'Please select a vital and enter a valid measurement.'])->withInput();
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Vital\Vital  $vitals
+     * @param  mixed  $vital
      * @return \Illuminate\Http\Response
      */
-    public function show(Vital $vital)
+    public function show($vital)
     {
-        return view('vitals.view', ['vital' => $vital]);
+        $userVital = Auth::user()->vitals()->with(['vital.unit', 'vital.inputType'])->findOrFail($vital);
+
+        return view('vitals.view', ['vital' => $userVital]);
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Vitals\Vitals  $vitals
+     * @param  mixed  $vital
      * @return \Illuminate\Http\Response
      */
-    public function edit(Vital $vital)
+    public function edit($vital)
     {
-        return view('vitals.edit', ['vital' => $vital]);
+        $userVital = Auth::user()->vitals()->with(['vital.unit', 'vital.inputType'])->findOrFail($vital);
+
+        return view('vitals.edit', ['vital' => $userVital]);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Vitals\Vitals  $vitals
+     * @param  mixed  $vital
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Vital $vital)
+    public function update(Request $request, $vital)
     {
-        Validator::make($request->all(),
-            [
-                'date' => 'required|date',
-                'weight' => 'required|numeric',
-                'height' => 'required|numeric'
-            ]
-        )->validate();
+        $userVital = Auth::user()->vitals()->findOrFail($vital);
 
-        $vital->height = $request->height;
-        $vital->weight = $request->weight;
-        $vital->date_measured = $request->date;
-        $vital->save();
+        $request->validate([
+            'date' => 'required|date',
+            'value' => 'required|numeric',
+        ]);
 
+        $userVital->update([
+            'date_measured' => $request->date,
+            'value' => $request->value,
+        ]);
 
-        return redirect()->route('vital.show', $vital->id)->with('success', 'Vital Updated');
-
+        return redirect()->route('vital.show', $userVital->id)->with('success', 'Vital updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Vitals\Vitals  $vitals
+     * @param  mixed  $vital
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Vital $vital)
+    public function destroy($vital)
     {
-        $vital->delete();
+        $userVital = Auth::user()->vitals()->findOrFail($vital);
+        $userVital->delete();
 
-        return redirect()->route('vital.index')->with('success', 'Vital Deleted');
+        return redirect()->route('vital.index')->with('success', 'Vital deleted successfully.');
     }
 
     /**
@@ -128,7 +207,20 @@ class VitalController extends Controller
      */
     public function export()
     {
-        $vitals = Auth::user()->vitals()->orderBy('date_measured', 'asc')->get(['weight', 'height', 'date_measured']);
+        $vitals = Auth::user()->vitals()
+            ->with(['vital.unit'])
+            ->orderBy('date_measured', 'asc')
+            ->get()
+            ->map(function ($uv) {
+                return [
+                    'vital' => $uv->vital ? $uv->vital->slug : null,
+                    'name' => $uv->vital ? $uv->vital->name : null,
+                    'value' => $uv->value,
+                    'unit' => $uv->vital && $uv->vital->unit ? $uv->vital->unit->symbol : null,
+                    'date_measured' => $uv->date_measured ? $uv->date_measured->format('Y-m-d') : null,
+                ];
+            });
+
         $json = $vitals->toJson(JSON_PRETTY_PRINT);
         $fileName = 'vitals_' . date('Y-m-d') . '.json';
 
@@ -157,19 +249,41 @@ class VitalController extends Controller
             return redirect()->route('vital.index')->withErrors(['vitals_file' => 'Invalid JSON structure. Must be an array of records.']);
         }
 
+        $weightVital = Vital::where('slug', 'weight')->first();
+        $heightVital = Vital::where('slug', 'height')->first();
+        $user = Auth::user();
         $imported = 0;
+
         foreach ($data as $entry) {
-            if (isset($entry['weight']) && isset($entry['height']) && isset($entry['date_measured'])) {
+            // New normalized format
+            if (isset($entry['vital']) && isset($entry['value']) && isset($entry['date_measured'])) {
+                $vital = Vital::where('slug', $entry['vital'])->first();
+                if ($vital) {
+                    $date = date('Y-m-d', strtotime($entry['date_measured']));
+                    $user->vitals()->updateOrCreate(
+                        ['vital_id' => $vital->id, 'date_measured' => $date],
+                        ['value' => floatval($entry['value'])]
+                    );
+                    $imported++;
+                }
+            }
+            // Support legacy format if provided
+            elseif (isset($entry['date_measured'])) {
                 $date = date('Y-m-d', strtotime($entry['date_measured']));
-                
-                Auth::user()->vitals()->updateOrCreate(
-                    ['date_measured' => $date],
-                    [
-                        'weight' => floatval($entry['weight']),
-                        'height' => floatval($entry['height']),
-                    ]
-                );
-                $imported++;
+                if (isset($entry['weight']) && $weightVital) {
+                    $user->vitals()->updateOrCreate(
+                        ['vital_id' => $weightVital->id, 'date_measured' => $date],
+                        ['value' => floatval($entry['weight'])]
+                    );
+                    $imported++;
+                }
+                if (isset($entry['height']) && $heightVital) {
+                    $user->vitals()->updateOrCreate(
+                        ['vital_id' => $heightVital->id, 'date_measured' => $date],
+                        ['value' => floatval($entry['height'])]
+                    );
+                    $imported++;
+                }
             }
         }
 

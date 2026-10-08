@@ -34,6 +34,11 @@ class ExampleTest extends TestCase
         $response = $this->actingAs($user)->get('/');
 
         $response->assertStatus(200);
+        $response->assertSee("Today's Workout", false);
+        $response->assertSee("Today's Meals", false);
+        $response->assertSee("Vitals Progress", false);
+        $response->assertSee("Workouts", false);
+        $response->assertSee("Meal Plans", false);
     }
 }
 
