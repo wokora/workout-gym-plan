@@ -36,5 +36,7 @@ Route::middleware(['auth', 'sso.verify'])->group(function(){
     Route::get('profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::get('food/search', [\App\Http\Controllers\Food\FoodController::class, 'search'])->name('food.search');
+    Route::get('foods', [\App\Http\Controllers\Food\FoodController::class, 'index'])->name('food.index');
+    Route::get('foods/{id}', [\App\Http\Controllers\Food\FoodController::class, 'show'])->name('food.show');
 });
 

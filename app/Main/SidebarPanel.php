@@ -22,20 +22,38 @@ class SidebarPanel
     public static function workouts()
     {
         return [
-            'title' => 'Workouts',
+            'title' => 'Workouts & Training',
             'items' => [
                 [
                     'workout_index' => [
                         'title' => 'All Workouts',
                         'route_name' => 'workout.index',
                     ],
-                    'workout_create' => [
-                        'title' => 'Create Workout Plan',
-                        'route_name' => 'workout.create',
+                    'exercise_index' => [
+                        'title' => 'Exercise Library',
+                        'route_name' => 'exercise.index',
+                    ],
+                    'muscle_map' => [
+                        'title' => 'Interactive Muscle Map',
+                        'route_name' => 'muscle-groups.index',
+                    ],
+                    'body_index' => [
+                        'title' => 'Muscle Groups',
+                        'route_name' => 'body.index',
                     ],
                 ],
             ],
         ];
+    }
+
+    public static function exercises()
+    {
+        return self::workouts();
+    }
+
+    public static function body()
+    {
+        return self::workouts();
     }
 
     public static function meals()
@@ -48,55 +66,9 @@ class SidebarPanel
                         'title' => 'All Meal Plans',
                         'route_name' => 'meal.index',
                     ],
-                    'meal_create' => [
-                        'title' => 'Create Meal Plan',
-                        'route_name' => 'meal.create',
-                    ],
-                ],
-            ],
-        ];
-    }
-
-    public static function exercises()
-    {
-        return [
-            'title' => 'Exercises',
-            'items' => [
-                [
-                    'exercise_index' => [
-                        'title' => 'Exercise Library',
-                        'route_name' => 'exercise.index',
-                    ],
-                    'muscle_groups' => [
-                        'title' => 'Anatomical Muscle Groups',
-                        'route_name' => 'muscle-groups.index',
-                    ],
-                    'exercise_create' => [
-                        'title' => 'Add New Exercise',
-                        'route_name' => 'exercise.create',
-                    ],
-                ],
-            ],
-        ];
-    }
-
-    public static function body()
-    {
-        return [
-            'title' => 'Body Sections',
-            'items' => [
-                [
-                    'muscle_map' => [
-                        'title' => 'Interactive Muscle Map',
-                        'route_name' => 'muscle-groups.index',
-                    ],
-                    'body_index' => [
-                        'title' => 'All Muscle Groups',
-                        'route_name' => 'body.index',
-                    ],
-                    'body_create' => [
-                        'title' => 'Add Body Section',
-                        'route_name' => 'body.create',
+                    'food_index' => [
+                        'title' => 'Food Database',
+                        'route_name' => 'food.index',
                     ],
                 ],
             ],
@@ -113,10 +85,6 @@ class SidebarPanel
                         'title' => 'Vitals Overview',
                         'route_name' => 'vital.index',
                     ],
-                    'vital_create' => [
-                        'title' => 'Record Vital',
-                        'route_name' => 'vital.create',
-                    ],
                 ],
             ],
         ];
@@ -128,8 +96,6 @@ class SidebarPanel
             self::dashboard(),
             self::workouts(),
             self::meals(),
-            self::exercises(),
-            self::body(),
             self::vitals(),
         ];
     }

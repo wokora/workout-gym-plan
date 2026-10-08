@@ -21,16 +21,14 @@ class SidebarComposer
 
             switch ($routePrefix) {
                 case 'workout':
+                case 'exercise':
+                case 'body':
+                case 'muscle-groups':
                     $view->with('sidebarMenu', SidebarPanel::workouts());
                     break;
                 case 'meal':
+                case 'food':
                     $view->with('sidebarMenu', SidebarPanel::meals());
-                    break;
-                case 'exercise':
-                    $view->with('sidebarMenu', SidebarPanel::exercises());
-                    break;
-                case 'body':
-                    $view->with('sidebarMenu', SidebarPanel::body());
                     break;
                 case 'vital':
                     $view->with('sidebarMenu', SidebarPanel::vitals());

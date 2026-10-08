@@ -43,39 +43,16 @@
         </div>
     </div>
 
-    <!-- Optional DOB Setup Notice if not yet configured -->
-    @if($user && !$user->date_of_birth)
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 rounded-lg border border-info/20 bg-info/10 px-4 py-2.5 text-info dark:bg-info/15">
-            <div class="flex items-center space-x-2 text-xs">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>Add your <strong>Date of Birth</strong> in Profile Settings to enable age-adjusted Max Heart Rate, BMR, and ACSM body fat metrics.</span>
-            </div>
-            <a href="{{ route('profile.edit') }}" class="btn h-6 shrink-0 rounded bg-info px-2.5 text-tiny font-medium text-white shadow-xs hover:bg-info-focus">
-                Set Date of Birth &rarr;
-            </a>
-        </div>
-    @endif
-
     <!-- 2. Recommended Weight Range Section (Top Positioned) -->
     @if($minWeight && $idealWeight && $maxWeight)
         <div>
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-1">
+            <div class="flex items-center justify-between mb-3">
                 <h2 class="text-sm-plus font-medium tracking-wide text-slate-700 dark:text-navy-100">
                     Recommended Weight Range
                 </h2>
-                <div class="flex items-center flex-wrap gap-x-2.5 text-xs text-slate-400 dark:text-navy-300">
-                    @if($userAge)
-                        <span>Age: <strong class="text-slate-600 dark:text-navy-200">{{ $userAge }} yrs</strong></span>
-                        <span class="text-slate-300 dark:text-navy-500">&bull;</span>
-                    @endif
-                    @if($bmr)
-                        <span>Basal BMR: <strong class="text-slate-600 dark:text-navy-200">{{ number_format($bmr) }} kcal/day</strong></span>
-                        <span class="text-slate-300 dark:text-navy-500">&bull;</span>
-                    @endif
-                    <span>Standing Height: {{ $height ? $height . ' cm' : '170 cm' }}</span>
-                </div>
+                <span class="text-xs text-slate-400 dark:text-navy-300">
+                    Standing Height: {{ $height ? $height . ' cm' : '170 cm' }}
+                </span>
             </div>
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5 lg:gap-6">
@@ -316,12 +293,7 @@
                             {{ $latestBodyFat ? $latestBodyFat->value : '--' }}
                             <span class="text-xs font-normal text-slate-400 dark:text-navy-300">%</span>
                         </p>
-                        <p class="text-xs-plus line-clamp-1 text-slate-400 dark:text-navy-300 mt-0.5">
-                            Body Fat
-                            @if($userAge)
-                                <span class="text-[10px] text-slate-400 dark:text-navy-300 font-normal">&bull; {{ $userAge }}y standard</span>
-                            @endif
-                        </p>
+                        <p class="text-xs-plus line-clamp-1 text-slate-400 dark:text-navy-300 mt-0.5">Body Fat</p>
                     </div>
                     <div class="mask is-star flex size-10 shrink-0 items-center justify-center bg-amber-500">
                         <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -345,56 +317,29 @@
                 </div>
             </a>
 
-            <!-- Card 6: Age & Baseline -->
-            <a href="{{ route('profile.edit') }}" class="card justify-center p-4.5 transition-all duration-200 hover:scale-[1.01] block group">
+            <!-- Card 6: Standing Height -->
+            <a href="{{ route('vital.index') }}" class="card justify-center p-4.5 transition-all duration-200 hover:scale-[1.01] block">
                 <div class="flex items-center justify-between">
                     <div>
-                        @if($userAge)
-                            <p class="text-lg font-bold font-inter text-slate-700 dark:text-navy-100 sm:text-xl">
-                                {{ $userAge }} <span class="text-xs font-normal text-slate-400 dark:text-navy-300">yrs</span>
-                            </p>
-                            <p class="text-xs-plus line-clamp-1 text-slate-400 dark:text-navy-300 mt-0.5">
-                                Age &bull; {{ $height ? $height . 'cm' : '--' }}
-                            </p>
-                        @else
-                            <p class="text-lg font-bold font-inter text-slate-700 dark:text-navy-100 sm:text-xl">
-                                {{ $height ? $height : '--' }} <span class="text-xs font-normal text-slate-400 dark:text-navy-300">cm</span>
-                            </p>
-                            <p class="text-xs-plus line-clamp-1 text-slate-400 dark:text-navy-300 mt-0.5">Standing Height</p>
-                        @endif
+                        <p class="text-lg font-bold font-inter text-slate-700 dark:text-navy-100 sm:text-xl">
+                            {{ $height ? $height : '--' }}
+                            <span class="text-xs font-normal text-slate-400 dark:text-navy-300">cm</span>
+                        </p>
+                        <p class="text-xs-plus line-clamp-1 text-slate-400 dark:text-navy-300 mt-0.5">Height</p>
                     </div>
-                    <div class="mask is-star flex size-10 shrink-0 items-center justify-center bg-success group-hover:opacity-90">
-                        @if($userAge)
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                        @else
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                            </svg>
-                        @endif
+                    <div class="mask is-star flex size-10 shrink-0 items-center justify-center bg-success">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                        </svg>
                     </div>
                 </div>
                 <div>
-                    @if($userAge && $bmr)
-                        <div class="badge mt-2 space-x-1 bg-success/10 py-1 px-1.5 text-success dark:bg-success/15">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="truncate">BMR: {{ number_format($bmr) }} kcal</span>
-                        </div>
-                    @elseif($userAge)
-                        <div class="badge mt-2 space-x-1 bg-success/10 py-1 px-1.5 text-success dark:bg-success/15">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="truncate">Baseline Set</span>
-                        </div>
-                    @else
-                        <div class="badge mt-2 space-x-1 bg-info/10 py-1 px-1.5 text-info dark:bg-info/15">
-                            <span>+ Add DOB</span>
-                        </div>
-                    @endif
+                    <div class="badge mt-2 space-x-1 bg-success/10 py-1 px-1.5 text-success dark:bg-success/15">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="truncate">Baseline</span>
+                    </div>
                 </div>
             </a>
         </div>
