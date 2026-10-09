@@ -3,108 +3,88 @@
 namespace App\Http\Controllers\Body;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BodySectionResource;
 use App\Models\Body\Body;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class BodyController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display a listing of body sections.
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        return view('body.index');
+        $sections = Body::orderBy('name')->get();
+
+        return response()->json([
+            'records' => BodySectionResource::collection($sections),
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Store a newly created body section in storage.
      */
-    public function create()
+    public function store(Request $request): JsonResponse
     {
-        return view('body.create');
+        $request->validate([
+            'name' => 'required|string|max:255|unique:body_section,name',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $body = Body::create([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+
+        return response()->json([
+            'message' => 'Body section created successfully.',
+            'body_section' => new BodySectionResource($body),
+        ], 201);
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Display the specified body section.
      */
-    public function store(Request $request)
+    public function show($id): JsonResponse
     {
-        Validator::make($request->all(),
-            [
-                'name' => 'required|unique:body_section,name',
-                'description' => 'nullable|max:255'
-            ]
-        )->validate();
+        $body = Body::findOrFail($id);
 
-        $body = new Body();
-        $body->name = $request->name;
-        $body->description = $request->description;
-        $body->save();
-
-        return redirect()->route('body.show', $body->id)->with('success', 'Body section created');
+        return response()->json([
+            'body_section' => new BodySectionResource($body),
+        ]);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Body\Body  $body
-     * @return \Illuminate\Http\Response
+     * Update the specified body section in storage.
      */
-    public function show(Body $body)
+    public function update(Request $request, $id): JsonResponse
     {
-        return view('body.view', ['body' => $body]);
+        $body = Body::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255|unique:body_section,name,' . $id,
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $body->update($request->only('name', 'description'));
+
+        return response()->json([
+            'message' => 'Body section updated successfully.',
+            'body_section' => new BodySectionResource($body),
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Body\Body  $body
-     * @return \Illuminate\Http\Response
+     * Remove the specified body section from storage.
      */
-    public function edit(Body $body)
+    public function destroy($id): JsonResponse
     {
-        return view('body.edit', ['body' => $body]);
-    }
+        $body = Body::findOrFail($id);
+        $body->delete();
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Body\Body  $body
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Body $body)
-    {
-        Validator::make($request->all(),
-            [
-                'name' => 'required|unique:body_section,name,'.$body->id,
-                'description' => 'nullable|max:255'
-            ]
-        )->validate();
-
-        $body->name = $request->name;
-        $body->description = $request->description;
-        $body->save();
-
-        return redirect()->route('body.show', $body->id)->with('success', 'Body section updated');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Body\Body  $body
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Body $body)
-    {
-        //
+        return response()->json([
+            'message' => 'Body section deleted successfully.',
+        ]);
     }
 }

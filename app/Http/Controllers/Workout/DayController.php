@@ -3,85 +3,85 @@
 namespace App\Http\Controllers\Workout;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\WorkoutDayResource;
 use App\Models\Workout\Day;
 use App\Models\Workout\Workout;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DayController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display a listing of days for a workout.
      */
-    public function index(Workout $workout)
+    public function index(Request $request, $workoutId): JsonResponse
     {
-        return view('workout.day.index', ['workout' => $workout]);
+        $workout = Workout::where('user_id', $request->user()->id)->findOrFail($workoutId);
+
+        $days = $workout->workout_day()
+            ->with(['day', 'workout_exercise.exercise.body_section.body_section'])
+            ->orderBy('number')
+            ->get();
+
+        return response()->json([
+            'records' => WorkoutDayResource::collection($days),
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display the specified day.
      */
-    public function create()
+    public function show(Request $request, $workoutId, $dayId): JsonResponse
     {
-        //
+        $workout = Workout::where('user_id', $request->user()->id)->findOrFail($workoutId);
+
+        $day = $workout->workout_day()
+            ->with(['day', 'workout_exercise.exercise.body_section.body_section'])
+            ->findOrFail($dayId);
+
+        return response()->json([
+            'day' => new WorkoutDayResource($day),
+        ]);
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Store a newly created day in a workout routine.
      */
-    public function store(Request $request)
+    public function store(Request $request, $workoutId): JsonResponse
     {
-        //
+        $workout = Workout::where('user_id', $request->user()->id)->findOrFail($workoutId);
+
+        $request->validate([
+            'day_id' => 'required|exists:day,id',
+            'number' => 'nullable|integer',
+        ]);
+
+        $dayModel = \App\Models\Day\Day::findOrFail($request->day_id);
+
+        $day = $workout->workout_day()->create([
+            'day_id' => $dayModel->id,
+            'number' => $request->number ?? $dayModel->number,
+        ]);
+
+        $day->load(['day', 'workout_exercise.exercise']);
+
+        return response()->json([
+            'message' => 'Day added to workout routine.',
+            'day' => new WorkoutDayResource($day),
+        ], 201);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Workout\Day  $day
-     * @return \Illuminate\Http\Response
+     * Remove the specified day from a workout routine.
      */
-    public function show(Workout $workout, Day $day)
+    public function destroy(Request $request, $workoutId, $dayId): JsonResponse
     {
-        return view('workout.day.index', ['day' => $day]);
-    }
+        $workout = Workout::where('user_id', $request->user()->id)->findOrFail($workoutId);
+        $day = $workout->workout_day()->findOrFail($dayId);
+        $day->delete();
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Workout\Day  $day
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Day $day)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Workout\Day  $day
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Day $day)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Workout\Day  $day
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Day $day)
-    {
-        //
+        return response()->json([
+            'message' => 'Day removed from workout successfully.',
+        ]);
     }
 }

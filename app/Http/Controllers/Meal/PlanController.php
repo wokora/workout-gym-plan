@@ -3,137 +3,144 @@
 namespace App\Http\Controllers\Meal;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\MealPlanResource;
 use App\Models\Day\Day;
 use App\Models\Meal\Plan;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
 class PlanController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display a listing of user meal plans.
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        return view('meal.index');
-    }
+        $perPage = (int) $request->input('per_page', 15);
+        $plans = Plan::where('user_id', $request->user()->id)
+            ->with(['meal_plan_day.day', 'meal_plan_day.entry.meal_type', 'meal_plan_day.entry.foods.food'])
+            ->orderBy('id', 'desc')
+            ->paginate($perPage);
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('meal.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        Validator::make($request->all(),
-            [
-                'name' => 'required',
-                'day' => 'required|array'
+        return response()->json([
+            'records' => MealPlanResource::collection($plans),
+            'pagination' => [
+                'current_page' => $plans->currentPage(),
+                'last_page'    => $plans->lastPage(),
+                'per_page'     => $plans->perPage(),
+                'total'        => $plans->total(),
             ]
-        )->validate();
+        ]);
+    }
+
+    /**
+     * Store a newly created meal plan in storage.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $daysInput = $request->input('day', $request->input('days', []));
+        $request->merge(['day' => $daysInput]);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'day' => 'required|array|min:1',
+            'day.*' => 'exists:day,id',
+        ]);
 
         $plan = new Plan();
-        $plan->user_id = Auth::id();
+        $plan->user_id = $request->user()->id;
         $plan->name = $request->name;
         $plan->save();
 
-        if($request->day) {
-
-            foreach ($request->day as $day) {
-                $day = Day::find($day);
-                $plan->meal_plan_day()->create([
-                    'day_id' => $day->id,
-                    'number' => $day->number
-                ]);
-            }
-        }
-
-
-        return redirect()->route('meal.show', $plan->id)->with('success', 'Meal Plan Created');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Meal\Plan  $meal
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Plan $meal)
-    {
-        return view('meal.view', ['meal' => $meal]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Meal\Plan  $meal
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Plan $meal)
-    {
-        return view('meal.edit', ['meal' => $meal]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Meal\Plan  $meal
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Plan $meal)
-    {
-        Validator::make($request->all(),
-            [
-                'name' => 'required',
-                'day' => 'required|exists:day,id'
-            ]
-        )->validate();
-
-        $meal->name = $request->name;
-        $meal->save();
-
-        $meal->meal_plan_day()->whereNotIn('day_id', $request->day)->delete();
-
-        if($request->day) {
-
-            foreach ($request->day as $day) {
-
-                if ($meal->meal_plan_day()->where('day_id', $day)->count() == 0) {
-                    $day = Day::find($day);
-                    $meal->meal_plan_day()->create(['day_id' => $day->id, 'number' => $day->number]);
+        if ($request->has('day')) {
+            foreach ($request->day as $dayId) {
+                $dayModel = Day::find($dayId);
+                if ($dayModel) {
+                    $plan->meal_plan_day()->create([
+                        'day_id' => $dayModel->id,
+                        'number' => $dayModel->number,
+                    ]);
                 }
-
             }
         }
 
-        return redirect()->route('meal.show', $meal->id)->with('success', 'Meal Plan Updated');
+        $plan->load(['meal_plan_day.day', 'meal_plan_day.entry.meal_type']);
+
+        return response()->json([
+            'message' => 'Meal plan created successfully.',
+            'meal_plan' => new MealPlanResource($plan),
+        ], 201);
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Meal\Plan  $meal
-     * @return \Illuminate\Http\Response
+     * Display the specified meal plan.
      */
-    public function destroy(Plan $meal)
+    public function show(Request $request, $id): JsonResponse
     {
-        $meal->delete();
+        $plan = Plan::where('user_id', $request->user()->id)
+            ->with(['meal_plan_day.day', 'meal_plan_day.entry.meal_type', 'meal_plan_day.entry.foods.food'])
+            ->findOrFail($id);
 
-        return redirect()->route('meal.index')->with('success', 'Meal Plan Deleted');
+        return response()->json([
+            'meal_plan' => new MealPlanResource($plan),
+        ]);
+    }
+
+    /**
+     * Update the specified meal plan in storage.
+     */
+    public function update(Request $request, $id): JsonResponse
+    {
+        $plan = Plan::where('user_id', $request->user()->id)->findOrFail($id);
+
+        if ($request->has('day') || $request->has('days')) {
+            $daysInput = $request->input('day', $request->input('days', []));
+            $request->merge(['day' => $daysInput]);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'day' => 'nullable|array',
+            'day.*' => 'exists:day,id',
+        ]);
+
+        $plan->name = $request->name;
+        $plan->save();
+
+        if ($request->has('day')) {
+            $plan->meal_plan_day()->whereNotIn('day_id', $request->day)->delete();
+
+            foreach ($request->day as $dayId) {
+                if ($plan->meal_plan_day()->where('day_id', $dayId)->count() === 0) {
+                    $dayModel = Day::find($dayId);
+                    if ($dayModel) {
+                        $plan->meal_plan_day()->create([
+                            'day_id' => $dayModel->id,
+                            'number' => $dayModel->number,
+                        ]);
+                    }
+                }
+            }
+        }
+
+        $plan->load(['meal_plan_day.day', 'meal_plan_day.entry.meal_type']);
+
+        return response()->json([
+            'message' => 'Meal plan updated successfully.',
+            'meal_plan' => new MealPlanResource($plan),
+        ]);
+    }
+
+    /**
+     * Remove the specified meal plan from storage.
+     */
+    public function destroy(Request $request, $id): JsonResponse
+    {
+        $plan = Plan::where('user_id', $request->user()->id)->findOrFail($id);
+        $plan->delete();
+
+        return response()->json([
+            'message' => 'Meal plan deleted successfully.',
+        ]);
     }
 }

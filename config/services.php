@@ -32,9 +32,10 @@ return [
 
     'sso' => [
         'url' => env('SSO_URL', 'http://localhost:8001'),
+        'base_url' => env('SSO_BASE_URL', env('SSO_URL', 'http://localhost:8001')),
         'client_id' => env('SSO_CLIENT_ID'),
         'client_secret' => env('SSO_CLIENT_SECRET'),
-        'redirect_uri' => env('SSO_REDIRECT_URI', 'http://localhost:8000/callback'),
+        'redirect_uri' => env('SSO_REDIRECT_URI', 'http://localhost:5173/auth/callback'),
     ],
 
 ];

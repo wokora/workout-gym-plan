@@ -3,94 +3,163 @@
 namespace App\Http\Controllers\Meal;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\MealPlanEntryResource;
 use App\Models\Meal\Day;
 use App\Models\Meal\Entry;
 use App\Models\Meal\Plan;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class EntryController extends Controller
 {
-    public function index(Plan $meal, Day $day)
+    /**
+     * Resolve a meal plan day by either meal_plan_day.id or day_id.
+     */
+    protected function getPlanDay(Plan $plan, $dayId)
     {
-        return view('meal.entry.index', ['meal' => $meal, 'day' => $day]);
+        return $plan->meal_plan_day()
+            ->where(function ($q) use ($dayId) {
+                $q->where('id', $dayId)->orWhere('day_id', $dayId);
+            })
+            ->firstOrFail();
     }
 
-    public function create(Plan $meal, Day $day)
+    /**
+     * Display a listing of entries for a meal plan day.
+     */
+    public function index(Request $request, $mealId, $dayId): JsonResponse
     {
-        return view('meal.entry.create', ['meal' => $meal, 'day' => $day]);
+        $plan = Plan::where('user_id', $request->user()->id)->findOrFail($mealId);
+        $day = $this->getPlanDay($plan, $dayId);
+
+        $entries = $day->entry()
+            ->with(['meal_type', 'foods.food'])
+            ->orderBy('number')
+            ->get();
+
+        return response()->json([
+            'records' => MealPlanEntryResource::collection($entries),
+        ]);
     }
 
-    public function store(Request $request, Plan $meal, Day $day)
+    /**
+     * Store a newly created entry in a meal plan day.
+     */
+    public function store(Request $request, $mealId, $dayId): JsonResponse
     {
-        Validator::make($request->all(),
-            [
-                'foods' => 'required|array|min:1',
-                'foods.*' => 'exists:food,id',
-                'meal_type' => 'required|exists:meal_type,id',
-                'description' => 'nullable',
-            ],
-            [
-                'foods.required' => 'Select at least one food.',
-                'foods.min' => 'Select at least one food.',
-            ]
-        )->validate();
+        $plan = Plan::where('user_id', $request->user()->id)->findOrFail($mealId);
+        $day = $this->getPlanDay($plan, $dayId);
 
-        $entry_count = $day->entry()->count();
+        // Normalize foods array to scalar IDs if sent as objects
+        if ($request->has('foods') && is_array($request->foods)) {
+            $normalizedFoods = array_map(function ($item) {
+                if (is_array($item)) {
+                    return $item['food_id'] ?? ($item['id'] ?? null);
+                }
+                return $item;
+            }, $request->foods);
+            $request->merge(['foods' => array_values(array_filter($normalizedFoods))]);
+        }
+
+        $request->validate([
+            'meal_type_id' => 'required|exists:meal_type,id',
+            'description' => 'nullable|string',
+            'foods' => 'required|array|min:1',
+            'foods.*' => 'exists:food,id',
+        ]);
+
+        $entryCount = $day->entry()->count();
 
         $entry = $day->entry()->create([
-            'meal_type_id' => $request->meal_type,
-            'number' => $entry_count + 1,
+            'meal_type_id' => $request->meal_type_id,
+            'number' => $entryCount + 1,
             'description' => $request->description,
         ]);
 
-        foreach ($request->foods as $food_id) {
-            $entry->foods()->create(['food_id' => $food_id]);
+        foreach ($request->foods as $foodId) {
+            $entry->foods()->create(['food_id' => $foodId]);
         }
 
-        return redirect()->route('meal.day.entry.show', [$meal->id, $day->id, $entry->id])->with('success', 'Entry Created');
+        $entry->load(['meal_type', 'foods.food']);
+
+        return response()->json([
+            'message' => 'Meal entry created successfully.',
+            'entry' => new MealPlanEntryResource($entry),
+        ], 201);
     }
 
-    public function show(Plan $meal, Day $day, Entry $entry)
+    /**
+     * Display the specified meal entry.
+     */
+    public function show(Request $request, $mealId, $dayId, $entryId): JsonResponse
     {
-        return view('meal.entry.view', ['entry' => $entry]);
+        $plan = Plan::where('user_id', $request->user()->id)->findOrFail($mealId);
+        $day = $this->getPlanDay($plan, $dayId);
+        $entry = $day->entry()->with(['meal_type', 'foods.food'])->findOrFail($entryId);
+
+        return response()->json([
+            'entry' => new MealPlanEntryResource($entry),
+        ]);
     }
 
-    public function edit(Plan $meal, Day $day, Entry $entry)
+    /**
+     * Update the specified meal entry.
+     */
+    public function update(Request $request, $mealId, $dayId, $entryId): JsonResponse
     {
-        return view('meal.entry.edit', ['entry' => $entry]);
-    }
+        $plan = Plan::where('user_id', $request->user()->id)->findOrFail($mealId);
+        $day = $this->getPlanDay($plan, $dayId);
+        $entry = $day->entry()->findOrFail($entryId);
 
-    public function update(Request $request, Plan $meal, Day $day, Entry $entry)
-    {
-        Validator::make($request->all(),
-            [
-                'foods' => 'required|array|min:1',
-                'foods.*' => 'exists:food,id',
-                'meal_type' => 'required|exists:meal_type,id',
-                'description' => 'nullable',
-            ],
-            [
-                'foods.required' => 'Select at least one food.',
-                'foods.min' => 'Select at least one food.',
-            ]
-        )->validate();
-
-        $entry->meal_type_id = $request->meal_type;
-        $entry->description = $request->description;
-        $entry->save();
-
-        $entry->foods()->forceDelete();
-        foreach ($request->foods as $food_id) {
-            $entry->foods()->create(['food_id' => $food_id]);
+        // Normalize foods array to scalar IDs if sent as objects
+        if ($request->has('foods') && is_array($request->foods)) {
+            $normalizedFoods = array_map(function ($item) {
+                if (is_array($item)) {
+                    return $item['food_id'] ?? ($item['id'] ?? null);
+                }
+                return $item;
+            }, $request->foods);
+            $request->merge(['foods' => array_values(array_filter($normalizedFoods))]);
         }
 
-        return redirect()->route('meal.day.entry.show', [$meal->id, $day->id, $entry->id])->with('success', 'Entry Updated');
+        $request->validate([
+            'meal_type_id' => 'sometimes|exists:meal_type,id',
+            'description' => 'nullable|string',
+            'foods' => 'sometimes|array|min:1',
+            'foods.*' => 'exists:food,id',
+        ]);
+
+        $entry->update($request->only('meal_type_id', 'description'));
+
+        if ($request->has('foods')) {
+            $entry->foods()->delete();
+            foreach ($request->foods as $foodId) {
+                $entry->foods()->create(['food_id' => $foodId]);
+            }
+        }
+
+        $entry->load(['meal_type', 'foods.food']);
+
+        return response()->json([
+            'message' => 'Meal entry updated successfully.',
+            'entry' => new MealPlanEntryResource($entry),
+        ]);
     }
 
-    public function destroy(Plan $meal, Day $day, Entry $entry)
+    /**
+     * Remove the specified meal entry.
+     */
+    public function destroy(Request $request, $mealId, $dayId, $entryId): JsonResponse
     {
+        $plan = Plan::where('user_id', $request->user()->id)->findOrFail($mealId);
+        $day = $this->getPlanDay($plan, $dayId);
+        $entry = $day->entry()->findOrFail($entryId);
+
+        $entry->foods()->delete();
         $entry->delete();
-        return redirect()->route('meal.day.show', [$meal->id, $day->id])->with('success', 'Entry Deleted');
+
+        return response()->json([
+            'message' => 'Meal entry deleted successfully.',
+        ]);
     }
 }

@@ -3,171 +3,113 @@
 namespace App\Http\Controllers\Disease;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\SymptomResource;
 use App\Models\Disease\Symptom;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class SymptomController extends Controller
 {
     /**
-     * Display a listing of symptoms grouped by body system with disease linkages.
-     *
-     * @param Request $request
-     * @return \Illuminate\View\View
+     * Display a listing of symptoms.
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $query = Symptom::with(['diseases']);
+        $query = Symptom::with('diseases.treatments.treatment_type');
 
         if ($request->filled('q')) {
             $search = trim($request->get('q'));
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+            $query->where('name', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%")
                   ->orWhere('body_system', 'like', "%{$search}%");
-            });
         }
 
         if ($request->filled('body_system')) {
             $query->where('body_system', $request->get('body_system'));
         }
 
-        $symptoms = $query->orderBy('name', 'asc')->get();
+        $perPage = (int) $request->input('per_page', 25);
+        $symptoms = $query->orderBy('name')->paginate($perPage);
 
-        // Unique body systems list
-        $bodySystems = Symptom::select('body_system')->distinct()->whereNotNull('body_system')->orderBy('body_system')->pluck('body_system');
-
-        return view('symptom.index', compact('symptoms', 'bodySystems'));
-    }
-
-    /**
-     * Show the form for creating a new symptom.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function create()
-    {
-        $bodySystems = Symptom::select('body_system')->distinct()->whereNotNull('body_system')->orderBy('body_system')->pluck('body_system');
-
-        return view('symptom.create', compact('bodySystems'));
-    }
-
-    /**
-     * Store a newly created symptom in storage.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'body_system' => 'nullable|string|max:100',
-            'description' => 'nullable|string',
+        return response()->json([
+            'records' => SymptomResource::collection($symptoms),
+            'pagination' => [
+                'current_page' => $symptoms->currentPage(),
+                'last_page'    => $symptoms->lastPage(),
+                'per_page'     => $symptoms->perPage(),
+                'total'        => $symptoms->total(),
+            ]
         ]);
-
-        $baseSlug = Str::slug($validated['name']);
-        $slug = $baseSlug;
-        $counter = 1;
-        while (Symptom::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter;
-            $counter++;
-        }
-
-        $symptom = Symptom::create([
-            'name' => $validated['name'],
-            'slug' => $slug,
-            'body_system' => $validated['body_system'] ?? null,
-            'description' => $validated['description'] ?? null,
-        ]);
-
-        return redirect()->route('symptom.show', $symptom->slug)
-            ->with('success', 'Symptom successfully recorded.');
     }
 
     /**
      * Display the specified symptom.
-     *
-     * @param string|int $id
-     * @return \Illuminate\View\View
      */
-    public function show($id)
+    public function show($id): JsonResponse
     {
         $symptom = Symptom::where('slug', $id)
             ->orWhere('id', $id)
-            ->with(['diseases.treatments.treatment_type'])
+            ->with('diseases.treatments.treatment_type')
             ->firstOrFail();
 
-        return view('symptom.show', compact('symptom'));
+        return response()->json([
+            'symptom' => new SymptomResource($symptom),
+        ]);
     }
 
     /**
-     * Show the form for editing the specified symptom.
-     *
-     * @param string|int $id
-     * @return \Illuminate\View\View
+     * Store a newly created symptom.
      */
-    public function edit($id)
+    public function store(Request $request): JsonResponse
     {
-        $symptom = Symptom::where('slug', $id)->orWhere('id', $id)->firstOrFail();
-        $bodySystems = Symptom::select('body_system')->distinct()->whereNotNull('body_system')->orderBy('body_system')->pluck('body_system');
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:symptom,name',
+            'description' => 'nullable|string',
+            'body_system' => 'nullable|string|max:255',
+        ]);
 
-        return view('symptom.edit', compact('symptom', 'bodySystems'));
+        $validated['slug'] = Str::slug($validated['name']);
+        $symptom = Symptom::create($validated);
+
+        return response()->json([
+            'message' => 'Symptom created successfully.',
+            'symptom' => new SymptomResource($symptom),
+        ], 201);
     }
 
     /**
-     * Update the specified symptom in storage.
-     *
-     * @param Request $request
-     * @param string|int $id
-     * @return \Illuminate\Http\RedirectResponse
+     * Update the specified symptom.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
         $symptom = Symptom::where('slug', $id)->orWhere('id', $id)->firstOrFail();
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'body_system' => 'nullable|string|max:100',
+            'name' => 'required|string|max:255|unique:symptom,name,' . $symptom->id,
             'description' => 'nullable|string',
+            'body_system' => 'nullable|string|max:255',
         ]);
 
-        $slug = $symptom->slug;
-        if ($symptom->name !== $validated['name']) {
-            $baseSlug = Str::slug($validated['name']);
-            $slug = $baseSlug;
-            $counter = 1;
-            while (Symptom::where('slug', $slug)->where('id', '!=', $symptom->id)->exists()) {
-                $slug = $baseSlug . '-' . $counter;
-                $counter++;
-            }
-        }
+        $validated['slug'] = Str::slug($validated['name']);
+        $symptom->update($validated);
 
-        $symptom->update([
-            'name' => $validated['name'],
-            'slug' => $slug,
-            'body_system' => $validated['body_system'] ?? null,
-            'description' => $validated['description'] ?? null,
+        return response()->json([
+            'message' => 'Symptom updated successfully.',
+            'symptom' => new SymptomResource($symptom),
         ]);
-
-        return redirect()->route('symptom.show', $symptom->slug)
-            ->with('success', 'Symptom details updated successfully.');
     }
 
     /**
-     * Remove the specified symptom from storage.
-     *
-     * @param string|int $id
-     * @return \Illuminate\Http\RedirectResponse
+     * Remove the specified symptom.
      */
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $symptom = Symptom::where('slug', $id)->orWhere('id', $id)->firstOrFail();
-
-        $symptom->diseases()->detach();
         $symptom->delete();
 
-        return redirect()->route('symptom.index')
-            ->with('success', 'Symptom deleted successfully.');
+        return response()->json([
+            'message' => 'Symptom deleted successfully.',
+        ]);
     }
 }

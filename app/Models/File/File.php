@@ -43,7 +43,7 @@ class File extends Model
         return $this->belongsTo(FileStatus::class, 'file_status_id');
     }
 
-    public static function upload(Model $fileable, $uploadFile, FileType $fileType, $uuid = null): File
+    public static function upload(?Model $fileable, $uploadFile, FileType $fileType, $uuid = null): File
     {
         $uuid = $uuid ?: (string) Str::uuid();
         $baseDirectory = strtolower($fileType->name);
@@ -71,7 +71,9 @@ class File extends Model
             'file_hash'      => hash_file('sha256', $uploadFile->getRealPath()),
         ]);
 
-        $file->fileable()->associate($fileable);
+        if ($fileable) {
+            $file->fileable()->associate($fileable);
+        }
         $file->save();
 
         return $file;

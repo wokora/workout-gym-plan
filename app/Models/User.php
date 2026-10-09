@@ -9,11 +9,12 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -26,6 +27,7 @@ class User extends Authenticatable
         'email',
         'password',
         'date_of_birth',
+        'gender_id',
     ];
 
     protected static function booted()
@@ -61,6 +63,10 @@ class User extends Authenticatable
 
     public function workout(){
         return $this->hasMany(Workout::class, 'user_id');
+    }
+
+    public function gender(){
+        return $this->belongsTo(Gender::class, 'gender_id');
     }
 
     public function vitals(){
@@ -143,7 +149,9 @@ class User extends Authenticatable
         $heightVital = $this->latestVital('height');
 
         if ($age && $weightVital && $heightVital && $weightVital->value > 0 && $heightVital->value > 0) {
-            return (int) round((10 * $weightVital->value) + (6.25 * $heightVital->value) - (5 * $age) + 5);
+            $isFemale = ($this->gender && strtolower($this->gender->slug ?? $this->gender->name ?? '') === 'female');
+            $offset = $isFemale ? -161 : 5;
+            return (int) round((10 * $weightVital->value) + (6.25 * $heightVital->value) - (5 * $age) + $offset);
         }
 
         return null;

@@ -11,17 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('disease_food', function (Blueprint $table) {
+        Schema::create('disease_recommendation', function (Blueprint $table) {
             $table->id();
             $table->foreignId('disease_id')->constrained('disease')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('food_id')->constrained('food')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('recommendation_type'); // recommended, therapeutic, limit, avoid
+            $table->foreignId('recommendation_type_id')->constrained('recommendation_type')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->string('recommendable_type');
+            $table->unsignedBigInteger('recommendable_id');
             $table->text('rationale')->nullable();
-            $table->string('serving_notes')->nullable();
+            $table->text('instructions')->nullable();
             $table->timestamps();
 
-            $table->unique(['disease_id', 'food_id']);
-            $table->index('recommendation_type');
+            $table->index(['disease_id', 'recommendation_type_id']);
+            $table->index(['recommendable_type', 'recommendable_id']);
         });
     }
 
@@ -30,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('disease_food');
+        Schema::dropIfExists('disease_recommendation');
     }
 };

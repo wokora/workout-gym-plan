@@ -3,85 +3,85 @@
 namespace App\Http\Controllers\Meal;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\MealPlanDayResource;
 use App\Models\Meal\Day;
 use App\Models\Meal\Plan;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DayController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display a listing of days for a meal plan.
      */
-    public function index(Plan $meal)
+    public function index(Request $request, $mealId): JsonResponse
     {
-        return view('meal.day.index', ['meal' => $meal]);
+        $plan = Plan::where('user_id', $request->user()->id)->findOrFail($mealId);
+
+        $days = $plan->meal_plan_day()
+            ->with(['day', 'entry.meal_type', 'entry.foods.food'])
+            ->orderBy('number')
+            ->get();
+
+        return response()->json([
+            'records' => MealPlanDayResource::collection($days),
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display the specified day in a meal plan.
      */
-    public function create()
+    public function show(Request $request, $mealId, $dayId): JsonResponse
     {
-        //
+        $plan = Plan::where('user_id', $request->user()->id)->findOrFail($mealId);
+
+        $day = $plan->meal_plan_day()
+            ->with(['day', 'entry.meal_type', 'entry.foods.food'])
+            ->findOrFail($dayId);
+
+        return response()->json([
+            'day' => new MealPlanDayResource($day),
+        ]);
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Add a day to a meal plan.
      */
-    public function store(Request $request)
+    public function store(Request $request, $mealId): JsonResponse
     {
-        //
+        $plan = Plan::where('user_id', $request->user()->id)->findOrFail($mealId);
+
+        $request->validate([
+            'day_id' => 'required|exists:day,id',
+            'number' => 'nullable|integer',
+        ]);
+
+        $dayModel = \App\Models\Day\Day::findOrFail($request->day_id);
+
+        $day = $plan->meal_plan_day()->create([
+            'day_id' => $dayModel->id,
+            'number' => $request->number ?? $dayModel->number,
+        ]);
+
+        $day->load(['day', 'entry.meal_type']);
+
+        return response()->json([
+            'message' => 'Day added to meal plan.',
+            'day' => new MealPlanDayResource($day),
+        ], 201);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Meal\Day  $day
-     * @return \Illuminate\Http\Response
+     * Remove a day from a meal plan.
      */
-    public function show(Plan $meal, Day $day)
+    public function destroy(Request $request, $mealId, $dayId): JsonResponse
     {
-        return view('meal.day.index', ['day' => $day]);
-    }
+        $plan = Plan::where('user_id', $request->user()->id)->findOrFail($mealId);
+        $day = $plan->meal_plan_day()->findOrFail($dayId);
+        $day->delete();
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Meal\Day  $day
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Day $day)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Meal\Day  $day
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Day $day)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Meal\Day  $day
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Day $day)
-    {
-        //
+        return response()->json([
+            'message' => 'Day removed from meal plan successfully.',
+        ]);
     }
 }

@@ -12,6 +12,8 @@ class Food extends Model
 
     protected $table = 'food';
 
+    protected $guarded = ['id'];
+
     public function food_category()
     {
         return $this->hasMany(FoodCategory::class, 'food_id');
@@ -24,8 +26,8 @@ class Food extends Model
 
     public function diseases()
     {
-        return $this->belongsToMany(\App\Models\Disease\Disease::class, 'disease_food', 'food_id', 'disease_id')
-            ->withPivot('id', 'recommendation_type', 'rationale', 'serving_notes')
+        return $this->morphToMany(\App\Models\Disease\Disease::class, 'recommendable', 'disease_recommendation')
+            ->withPivot('id', 'recommendation_type_id', 'rationale', 'instructions')
             ->withTimestamps();
     }
 }

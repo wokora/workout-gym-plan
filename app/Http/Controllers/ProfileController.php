@@ -2,46 +2,45 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
     /**
-     * Show the profile edit page.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
+     * Show the profile information for the authenticated user.
      */
-    public function edit()
+    public function show(Request $request): JsonResponse
     {
-        $user = Auth::user();
-        $userAge = $user ? $user->age() : null;
-
-        return view('profile.edit', compact('user', 'userAge'));
+        return response()->json([
+            'user' => new UserResource($request->user())
+        ]);
     }
 
     /**
      * Update the user profile.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request)
+    public function update(Request $request): JsonResponse
     {
-        $user = Auth::user();
+        $user = $request->user();
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('user')->ignore($user->id)],
             'date_of_birth' => ['nullable', 'date', 'before:today', 'after:1900-01-01'],
+            'gender_id' => ['nullable', 'exists:gender,id'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->date_of_birth = !empty($validated['date_of_birth']) ? $validated['date_of_birth'] : null;
+        if (array_key_exists('gender_id', $validated)) {
+            $user->gender_id = $validated['gender_id'];
+        }
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
@@ -49,6 +48,9 @@ class ProfileController extends Controller
 
         $user->save();
 
-        return redirect()->route('profile.edit')->with('success', 'Profile details updated successfully.');
+        return response()->json([
+            'message' => 'Profile updated successfully.',
+            'user' => new UserResource($user)
+        ]);
     }
 }

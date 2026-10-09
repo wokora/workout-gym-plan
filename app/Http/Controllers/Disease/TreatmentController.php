@@ -3,33 +3,29 @@
 namespace App\Http\Controllers\Disease;
 
 use App\Http\Controllers\Controller;
-use App\Models\Disease\EvidenceLevel;
+use App\Http\Resources\TreatmentResource;
 use App\Models\Disease\Treatment;
-use App\Models\Disease\TreatmentType;
 use App\Models\File\File;
 use App\Models\File\FileType;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class TreatmentController extends Controller
 {
     /**
-     * Display a listing of treatments with filtering.
-     *
-     * @param Request $request
-     * @return \Illuminate\View\View
+     * Display a listing of treatments.
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $query = Treatment::with(['treatment_type', 'evidence_level', 'diseases', 'images']);
+        $query = Treatment::with(['treatment_type', 'evidence_level', 'images', 'diseases']);
 
         if ($request->filled('q')) {
             $search = trim($request->get('q'));
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('standard_protocol', 'like', "%{$search}%")
-                  ->orWhere('mechanism_of_action', 'like', "%{$search}%");
+                  ->orWhere('standard_protocol', 'like', "%{$search}%");
             });
         }
 
@@ -37,153 +33,138 @@ class TreatmentController extends Controller
             $query->where('treatment_type_id', $request->get('treatment_type_id'));
         }
 
-        $treatments = $query->orderBy('name', 'asc')->paginate(12)->withQueryString();
+        $perPage = (int) $request->input('per_page', 15);
+        $treatments = $query->orderBy('name')->paginate($perPage);
 
-        $treatmentTypes = TreatmentType::withCount('treatments')->orderBy('name', 'asc')->get();
-        $totalTreatmentsCount = Treatment::count();
-
-        return view('treatment.index', compact('treatments', 'treatmentTypes', 'totalTreatmentsCount'));
+        return response()->json([
+            'records' => TreatmentResource::collection($treatments),
+            'pagination' => [
+                'current_page' => $treatments->currentPage(),
+                'last_page'    => $treatments->lastPage(),
+                'per_page'     => $treatments->perPage(),
+                'total'        => $treatments->total(),
+            ]
+        ]);
     }
 
     /**
-     * Show form to create a new treatment/cure.
-     *
-     * @return \Illuminate\View\View
+     * Display the specified treatment.
      */
-    public function create()
+    public function show($id): JsonResponse
     {
-        $treatmentTypes = TreatmentType::orderBy('name', 'asc')->get();
+        $treatment = Treatment::where('slug', $id)
+            ->orWhere('id', $id)
+            ->with(['treatment_type', 'evidence_level', 'diseases', 'images'])
+            ->firstOrFail();
 
-        return view('treatment.create', compact('treatmentTypes'));
+        return response()->json([
+            'treatment' => new TreatmentResource($treatment),
+        ]);
     }
 
     /**
      * Store a newly created treatment.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'treatment_type_id' => 'required|exists:treatment_type,id',
+            'evidence_level_id' => 'nullable|exists:evidence_level,id',
             'description' => 'nullable|string',
-            'standard_protocol' => 'nullable|string',
             'mechanism_of_action' => 'nullable|string',
+            'standard_protocol' => 'nullable|string',
             'side_effects' => 'nullable|string',
             'cautions_warnings' => 'nullable|string',
+            'image_id' => 'nullable|integer',
             'image' => 'nullable|image|max:8192',
         ]);
 
-        $treatment = Treatment::create([
-            'name' => $validated['name'],
-            'slug' => Str::slug($validated['name']),
-            'treatment_type_id' => $validated['treatment_type_id'],
-            'description' => $validated['description'] ?? null,
-            'standard_protocol' => $validated['standard_protocol'] ?? null,
-            'mechanism_of_action' => $validated['mechanism_of_action'] ?? null,
-            'side_effects' => $validated['side_effects'] ?? null,
-            'cautions_warnings' => $validated['cautions_warnings'] ?? null,
-        ]);
+        $validated['slug'] = Str::slug($validated['name']);
+        $treatment = Treatment::create($validated);
 
-        if ($request->hasFile('image')) {
+        if ($request->filled('image_id')) {
+            $mediaFile = File::find($request->input('image_id'));
+            if ($mediaFile) {
+                $mediaFile->fileable()->associate($treatment);
+                $mediaFile->save();
+            }
+        } elseif ($request->hasFile('image')) {
             $imageType = FileType::where('name', 'Image')->first();
             if ($imageType) {
                 File::upload($treatment, $request->file('image'), $imageType);
             }
         }
 
-        return redirect()->route('treatment.show', $treatment->slug)
-            ->with('success', 'Treatment / Remedy successfully added.');
+        $treatment->load(['treatment_type', 'evidence_level', 'images']);
+
+        return response()->json([
+            'message' => 'Treatment created successfully.',
+            'treatment' => new TreatmentResource($treatment),
+        ], 201);
     }
 
     /**
-     * Display detailed treatment profile.
-     *
-     * @param string|int $slugOrId
-     * @return \Illuminate\View\View
+     * Update the specified treatment.
      */
-    public function show($slugOrId)
-    {
-        $treatment = Treatment::where('slug', $slugOrId)
-            ->orWhere('id', $slugOrId)
-            ->with([
-                'treatment_type',
-                'evidence_level',
-                'diseases',
-                'files.file_type',
-            ])
-            ->firstOrFail();
-
-        return view('treatment.show', compact('treatment'));
-    }
-
-    /**
-     * Show form to edit an existing treatment.
-     *
-     * @param string|int $id
-     * @return \Illuminate\View\View
-     */
-    public function edit($id)
-    {
-        $treatment = Treatment::where('slug', $id)->orWhere('id', $id)->firstOrFail();
-        $treatmentTypes = TreatmentType::orderBy('name', 'asc')->get();
-
-        return view('treatment.edit', compact('treatment', 'treatmentTypes'));
-    }
-
-    /**
-     * Update an existing treatment.
-     *
-     * @param Request $request
-     * @param string|int $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
         $treatment = Treatment::where('slug', $id)->orWhere('id', $id)->firstOrFail();
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'treatment_type_id' => 'required|exists:treatment_type,id',
+            'evidence_level_id' => 'nullable|exists:evidence_level,id',
             'description' => 'nullable|string',
-            'standard_protocol' => 'nullable|string',
             'mechanism_of_action' => 'nullable|string',
+            'standard_protocol' => 'nullable|string',
             'side_effects' => 'nullable|string',
             'cautions_warnings' => 'nullable|string',
+            'image_id' => 'nullable|integer',
             'image' => 'nullable|image|max:8192',
         ]);
 
-        $treatment->update([
-            'name' => $validated['name'],
-            'treatment_type_id' => $validated['treatment_type_id'],
-            'description' => $validated['description'] ?? null,
-            'standard_protocol' => $validated['standard_protocol'] ?? null,
-            'mechanism_of_action' => $validated['mechanism_of_action'] ?? null,
-            'side_effects' => $validated['side_effects'] ?? null,
-            'cautions_warnings' => $validated['cautions_warnings'] ?? null,
-        ]);
+        $validated['slug'] = Str::slug($validated['name']);
+        $treatment->update($validated);
 
-        if ($request->hasFile('image')) {
+        if ($request->filled('image_id')) {
+            $mediaFile = File::find($request->input('image_id'));
+            if ($mediaFile) {
+                $mediaFile->fileable()->associate($treatment);
+                $mediaFile->save();
+            }
+        } elseif ($request->hasFile('image')) {
             $imageType = FileType::where('name', 'Image')->first();
             if ($imageType) {
                 File::upload($treatment, $request->file('image'), $imageType);
             }
         }
 
-        return redirect()->route('treatment.show', $treatment->slug)
-            ->with('success', 'Treatment details successfully updated.');
+        $treatment->load(['treatment_type', 'evidence_level', 'images']);
+
+        return response()->json([
+            'message' => 'Treatment updated successfully.',
+            'treatment' => new TreatmentResource($treatment),
+        ]);
     }
 
     /**
-     * Upload an image to the treatment.
-     *
-     * @param Request $request
-     * @param int|string $id
-     * @return \Illuminate\Http\RedirectResponse
+     * Remove the specified treatment.
      */
-    public function uploadImage(Request $request, $id)
+    public function destroy($id): JsonResponse
+    {
+        $treatment = Treatment::where('slug', $id)->orWhere('id', $id)->firstOrFail();
+        $treatment->delete();
+
+        return response()->json([
+            'message' => 'Treatment deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Upload image for treatment.
+     */
+    public function uploadImage(Request $request, $id): JsonResponse
     {
         $treatment = Treatment::where('slug', $id)->orWhere('id', $id)->firstOrFail();
 
@@ -191,25 +172,13 @@ class TreatmentController extends Controller
             'image' => 'required|image|max:8192',
         ]);
 
-        $imageType = FileType::where('name', 'Image')->firstOrFail();
-        File::upload($treatment, $request->file('image'), $imageType);
+        $imageType = FileType::where('name', 'Image')->first();
+        if ($imageType) {
+            File::upload($treatment, $request->file('image'), $imageType);
+        }
 
-        return redirect()->route('treatment.show', $treatment->slug)
-            ->with('success', 'Image successfully uploaded to treatment.');
-    }
-
-    /**
-     * Delete a treatment.
-     *
-     * @param string|int $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function destroy($id)
-    {
-        $treatment = Treatment::where('slug', $id)->orWhere('id', $id)->firstOrFail();
-        $treatment->delete();
-
-        return redirect()->route('treatment.index')
-            ->with('success', 'Treatment successfully deleted.');
+        return response()->json([
+            'message' => 'Image uploaded successfully.',
+        ]);
     }
 }

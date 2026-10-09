@@ -3,126 +3,110 @@
 namespace App\Http\Controllers\Workout;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\WorkoutExerciseResource;
 use App\Models\Workout\Day;
 use App\Models\Workout\Exercise;
 use App\Models\Workout\Workout;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class ExerciseController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display a listing of exercises for a workout day.
      */
-    public function index(Workout $workout, Day $day)
+    public function index(Request $request, $workoutId, $dayId): JsonResponse
     {
-        return view('workout.exercise.index', ['workout' => $workout, 'day' => $day] );
+        $workout = Workout::where('user_id', $request->user()->id)->findOrFail($workoutId);
+        $day = $workout->workout_day()->findOrFail($dayId);
+
+        $exercises = $day->workout_exercise()
+            ->with('exercise.body_section.body_section')
+            ->orderBy('number')
+            ->get();
+
+        return response()->json([
+            'records' => WorkoutExerciseResource::collection($exercises),
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Store a newly created exercise in the workout day.
      */
-    public function create(Workout $workout, Day $day)
+    public function store(Request $request, $workoutId, $dayId): JsonResponse
     {
-        return view('workout.exercise.create', ['workout' => $workout, 'day' => $day]);
-    }
+        $workout = Workout::where('user_id', $request->user()->id)->findOrFail($workoutId);
+        $day = $workout->workout_day()->findOrFail($dayId);
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request, Workout $workout, Day $day)
-    {
-
-        Validator::make($request->all(),
-            [
-                'exercise' => 'required|exists:exercise,id|unique:workout_day_exercise,exercise_id,NULL,id,workout_day_id,'.$day->id,
-                'sets' => 'required|numeric|min:1',
-                'reps' => 'required|numeric|min:1',
+        $request->validate([
+            'exercise_id' => [
+                'required',
+                'exists:exercise,id',
+                function ($attribute, $value, $fail) use ($day) {
+                    if ($day->workout_exercise()->where('exercise_id', $value)->exists()) {
+                        $fail('This exercise is already added to this day routine.');
+                    }
+                }
             ],
-            [
-                'exercise.unique' => 'You already have this exercise in the day workout'
-            ]
-        )->validate();
-
-        $workout_excercise_count = $day->workout_exercise()->count();
-
-        $workout_excercise = $day->workout_exercise()->create([
-            'exercise_id' => $request->exercise,
-            'number' => $workout_excercise_count + 1,
-            'sets' => $request->sets,
-            'reps' => $request->reps
+            'sets' => 'required|numeric|min:1',
+            'reps' => 'required|numeric|min:1',
+            'number' => 'nullable|integer',
         ]);
 
-        return redirect()->route('workout.day.exercise.show', [$workout->id, $day->id, $workout_excercise->id])->with('success', 'Workout Created');
+        $count = $day->workout_exercise()->count();
+
+        $workoutExercise = $day->workout_exercise()->create([
+            'exercise_id' => $request->exercise_id,
+            'number' => $request->number ?? ($count + 1),
+            'sets' => $request->sets,
+            'reps' => $request->reps,
+        ]);
+
+        $workoutExercise->load('exercise.body_section.body_section');
+
+        return response()->json([
+            'message' => 'Exercise added to workout day.',
+            'exercise' => new WorkoutExerciseResource($workoutExercise),
+        ], 201);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Workout\Exercise  $exercise
-     * @return \Illuminate\Http\Response
+     * Update the exercise details (sets, reps, order).
      */
-    public function show(Workout $workout, Day $day, Exercise $exercise)
+    public function update(Request $request, $workoutId, $dayId, $exerciseId): JsonResponse
     {
-        return view('workout.exercise.view', ['workout_exercise' => $exercise]);
+        $workout = Workout::where('user_id', $request->user()->id)->findOrFail($workoutId);
+        $day = $workout->workout_day()->findOrFail($dayId);
+        $workoutExercise = $day->workout_exercise()->findOrFail($exerciseId);
+
+        $request->validate([
+            'sets' => 'sometimes|numeric|min:1',
+            'reps' => 'sometimes|numeric|min:1',
+            'number' => 'sometimes|integer',
+        ]);
+
+        $workoutExercise->update($request->only('sets', 'reps', 'number'));
+        $workoutExercise->load('exercise.body_section.body_section');
+
+        return response()->json([
+            'message' => 'Exercise updated successfully.',
+            'exercise' => new WorkoutExerciseResource($workoutExercise),
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Workout\Exercise  $exercise
-     * @return \Illuminate\Http\Response
+     * Remove the specified exercise from the workout day.
      */
-    public function edit(Workout $workout, Day $day, Exercise $exercise)
+    public function destroy(Request $request, $workoutId, $dayId, $exerciseId): JsonResponse
     {
-        return view('workout.exercise.edit', ['workout_exercise' => $exercise]);
-    }
+        $workout = Workout::where('user_id', $request->user()->id)->findOrFail($workoutId);
+        $day = $workout->workout_day()->findOrFail($dayId);
+        $workoutExercise = $day->workout_exercise()->findOrFail($exerciseId);
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Workout\Exercise  $exercise
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Workout $workout, Day $day, Exercise $exercise)
-    {
-        Validator::make($request->all(),
-            [
-                'exercise' => 'required|exists:exercise,id|unique:workout_day_exercise,exercise_id,'.$exercise->id.',id,workout_day_id,'.$workout->id,
-                'sets' => 'required|numeric|min:1',
-                'reps' => 'required|numeric|min:1',
-            ],
-            [
-                'exercise.unique' => 'You already have this exercise in the workout'
-            ]
-        )->validate();
+        $workoutExercise->delete();
 
-        $exercise->exercise_id = $request->exercise;
-        $exercise->sets = $request->sets;
-        $exercise->reps = $request->reps;
-        $exercise->save();
-
-        return redirect()->route('workout.day.exercise.show', [$workout->id, $day->id, $exercise->id])->with('success', 'Workout Updates');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Workout\Exercise  $exercise
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Workout $workout, Day $day, Exercise $exercise)
-    {
-        $exercise->delete();
-
-        return redirect()->route('workout.day.show', [$workout->id, $day->id])->with('success', 'Workout Exercise Deleted');;
+        return response()->json([
+            'message' => 'Exercise removed from workout day successfully.',
+        ]);
     }
 }

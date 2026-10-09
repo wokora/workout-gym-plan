@@ -37,8 +37,8 @@ class Exercise extends Model
 
     public function diseases()
     {
-        return $this->belongsToMany(\App\Models\Disease\Disease::class, 'disease_exercise', 'exercise_id', 'disease_id')
-            ->withPivot('id', 'safety_type', 'instructions', 'modifications')
+        return $this->morphToMany(\App\Models\Disease\Disease::class, 'recommendable', 'disease_recommendation')
+            ->withPivot('id', 'recommendation_type_id', 'rationale', 'instructions')
             ->withTimestamps();
     }
 }

@@ -12,7 +12,7 @@ class Entry extends Model
 
     protected $table = 'meal_plan_day_entry';
 
-    protected $fillable = ['meal_type_id', 'number', 'description'];
+    protected $fillable = ['meal_plan_day_id', 'meal_type_id', 'number', 'description'];
 
     public function meal_plan_day()
     {

@@ -2,22 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\BodySectionResource;
 use App\Models\Body\Body;
 use App\Models\Exercise\Exercise;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class MuscleGroupController extends Controller
 {
     /**
-     * Display the interactive Anatomical Muscle Groups exploration tool.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\View\View
+     * Display the interactive Anatomical Muscle Groups and mapped exercises as JSON.
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $selectedMuscle = $request->query('muscle');
-
         $bodySections = Body::orderBy('name')->get();
 
         $exercises = Exercise::with('body_section.body_section')
@@ -38,12 +35,14 @@ class MuscleGroupController extends Controller
                     'id' => $ex->id,
                     'name' => $ex->name,
                     'description' => $ex->description,
-                    'view_url' => route('exercise.show', $ex->id),
-                    'body_sections' => $ex->targetedMuscleNames(),
+                    'targeted_muscles' => $ex->targetedMuscleNames(),
                 ];
             })->all();
         }
 
-        return view('muscle-groups.index', compact('bodySections', 'exercises', 'exercisesByMuscle', 'selectedMuscle'));
+        return response()->json([
+            'body_sections' => BodySectionResource::collection($bodySections),
+            'exercises_by_muscle' => $exercisesByMuscle,
+        ]);
     }
 }

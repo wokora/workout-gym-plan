@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MealPlanResource;
+use App\Http\Resources\UserResource;
+use App\Http\Resources\UserVitalResource;
+use App\Http\Resources\WorkoutResource;
 use App\Models\Body\Body;
 use App\Models\Exercise\Exercise;
 use App\Models\Meal\Day as MealDay;
@@ -11,20 +15,18 @@ use App\Models\Vital\Vital;
 use App\Models\Workout\Day as WorkoutDay;
 use App\Models\Workout\Workout;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
     /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
+     * Return application dashboard analytics and health insights as JSON.
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        $user = Auth::user();
-        $userId = Auth::id();
+        $user = $request->user();
+        $userId = $user->id;
 
         // 1. Core counts
         $workoutCount = Workout::where('user_id', $userId)->count();
@@ -33,22 +35,21 @@ class HomeController extends Controller
         $bodySectionsCount = Body::count();
 
         // 2. User vitals & BMI calculation
-        $latestWeight = $user ? $user->latestVital('weight') : null;
-        $latestHeight = $user ? $user->latestVital('height') : null;
-        $latestHeartRate = $user ? $user->latestVital('heart_rate') : null;
-        $latestBpSystolic = $user ? $user->latestVital('bp_systolic') : null;
-        $latestBpDiastolic = $user ? $user->latestVital('bp_diastolic') : null;
-        $latestBodyFat = $user ? $user->latestVital('body_fat') : null;
+        $latestWeight = $user->latestVital('weight');
+        $latestHeight = $user->latestVital('height');
+        $latestHeartRate = $user->latestVital('heart_rate');
+        $latestBpSystolic = $user->latestVital('bp_systolic');
+        $latestBpDiastolic = $user->latestVital('bp_diastolic');
+        $latestBodyFat = $user->latestVital('body_fat');
 
-        $weight = $latestWeight ? $latestWeight->value : null;
-        $height = $latestHeight ? $latestHeight->value : null;
-        $bmi = $user ? $user->bmi() : null;
-
+        $weight = $latestWeight ? floatval($latestWeight->value) : null;
+        $height = $latestHeight ? floatval($latestHeight->value) : null;
+        $bmi = $user->bmi();
         $bmiCategory = 'Normal';
         $bmiColor = '#10b981';
         $bmiBadgeClass = 'bg-success/10 text-success dark:bg-success/15';
-
         $bmiIsWarning = false;
+
         if ($bmi) {
             if ($bmi < 18.5) {
                 $bmiCategory = 'Underweight';
@@ -74,17 +75,12 @@ class HomeController extends Controller
         }
 
         // 3. Recommended weight targets (BMI 18.5, 22.2, 24.9)
-        $minWeight = null;
-        $idealWeight = null;
-        $maxWeight = null;
-
-        if ($height && $height > 0) {
-            $heightM = $height / 100;
-            $heightSqrd = $heightM * $heightM;
-            $minWeight = round(18.5 * $heightSqrd, 1);
-            $idealWeight = round(22.2 * $heightSqrd, 1);
-            $maxWeight = round(24.9 * $heightSqrd, 1);
-        }
+        $calcHeight = ($height && $height > 0) ? $height : 170;
+        $heightM = $calcHeight / 100;
+        $heightSqrd = $heightM * $heightM;
+        $minWeight = round(18.5 * $heightSqrd, 1);
+        $idealWeight = round(22.2 * $heightSqrd, 1);
+        $maxWeight = round(24.9 * $heightSqrd, 1);
 
         // 3b. Status and warnings for each bodily vital
         // Weight Status
@@ -167,12 +163,11 @@ class HomeController extends Controller
             }
         }
 
-        // 2b. User Age & Age-derived biometrics
-        $userAge = $user ? $user->age() : null;
-        $maxHeartRate = $user ? $user->maxHeartRate() : null;
-        $bmr = $user ? $user->bmr() : null;
+        // Age-derived biometrics & Heart Rate Status
+        $userAge = $user->age();
+        $maxHeartRate = $user->maxHeartRate();
+        $bmr = $user->bmr();
 
-        // Heart Rate Status
         $hrStatus = [
             'label' => 'Not Logged',
             'badgeClass' => 'bg-slate-100 text-slate-400 dark:bg-navy-600 dark:text-navy-300',
@@ -206,7 +201,7 @@ class HomeController extends Controller
             }
         }
 
-        // Body Fat Status (Age-stratified standards)
+        // Body Fat Status
         $bfStatus = [
             'label' => 'Not Logged',
             'badgeClass' => 'bg-slate-100 text-slate-400 dark:bg-navy-600 dark:text-navy-300',
@@ -215,23 +210,23 @@ class HomeController extends Controller
         ];
         if ($latestBodyFat) {
             $bf = floatval($latestBodyFat->value);
-
-            // Age-stratified clinical standards (ACSM)
-            $highBfThreshold = 28;
-            $modBfThreshold = 22;
+            $gender = strtolower($user->gender ? ($user->gender->slug ?? $user->gender->name ?? 'male') : 'male');
+            $highBfThreshold = 25;
+            $modBfThreshold = 18;
             $lowBfThreshold = 6;
-            if ($userAge !== null) {
-                if ($userAge < 30) {
-                    $highBfThreshold = 24;
-                    $modBfThreshold = 19;
-                    $lowBfThreshold = 6;
-                } elseif ($userAge < 50) {
-                    $highBfThreshold = 26;
-                    $modBfThreshold = 21;
-                    $lowBfThreshold = 7;
-                } else {
+
+            if ($gender === 'female' || $gender === 'f') {
+                $highBfThreshold = 32;
+                $modBfThreshold = 25;
+                $lowBfThreshold = 14;
+            } elseif ($userAge && $userAge > 40) {
+                if ($userAge > 60) {
                     $highBfThreshold = 28;
-                    $modBfThreshold = 23;
+                    $modBfThreshold = 22;
+                    $lowBfThreshold = 9;
+                } else {
+                    $highBfThreshold = 26;
+                    $modBfThreshold = 20;
                     $lowBfThreshold = 8;
                 }
             }
@@ -275,11 +270,71 @@ class HomeController extends Controller
             ->with(['workout', 'workout_exercise.exercise.body_section.body_section', 'day'])
             ->get();
 
+        $formattedTodayWorkouts = $todayWorkoutDays->map(function ($wd) {
+            $totalSets = $wd->workout_exercise->sum('sets');
+            $totalReps = $wd->workout_exercise->sum(fn($we) => $we->sets * $we->reps);
+            $startTime = $wd->workout->start_time ? Carbon::parse($wd->workout->start_time) : null;
+            $endTime = $wd->workout->end_time ? Carbon::parse($wd->workout->end_time) : null;
+            $durationMin = ($startTime && $endTime) ? $startTime->diffInMinutes($endTime) : 60;
+
+            return [
+                'id' => $wd->id,
+                'workout_id' => $wd->workout->id,
+                'workout_name' => $wd->workout->name,
+                'day_name' => $wd->day ? $wd->day->name : 'Scheduled',
+                'start_time' => $startTime ? $startTime->format('H:i') : null,
+                'end_time' => $endTime ? $endTime->format('H:i') : null,
+                'duration_min' => $durationMin,
+                'exercise_count' => $wd->workout_exercise->count(),
+                'total_sets' => $totalSets,
+                'total_reps' => $totalReps,
+                'exercises' => $wd->workout_exercise->map(function ($we) {
+                    return [
+                        'id' => $we->id,
+                        'name' => $we->exercise->name,
+                        'sets' => $we->sets,
+                        'reps' => $we->reps,
+                        'body_sections' => $we->exercise->body_section->map(fn($eb) => $eb->body_section->name)->values(),
+                    ];
+                }),
+            ];
+        });
+
         // 5. Today's scheduled meals
         $todayMealDays = MealDay::whereHas('day', fn($q) => $q->where('number', $todayDayNum))
             ->whereHas('meal_plan', fn($q) => $q->where('user_id', $userId))
             ->with(['meal_plan', 'entry.foods.food', 'entry.meal_type', 'day'])
             ->get();
+
+        $formattedTodayMeals = $todayMealDays->map(function ($mpd) {
+            $totalEntries = $mpd->entry->count();
+            $totalFoods = $mpd->entry->sum(fn($e) => $e->foods->count());
+            $totalKcal = $mpd->entry->sum(fn($e) => $e->foods->sum(fn($f) => $f->food->energy_kcal ?? 0));
+            $totalProtein = $mpd->entry->sum(fn($e) => $e->foods->sum(fn($f) => $f->food->protein ?? 0));
+
+            return [
+                'id' => $mpd->id,
+                'meal_plan_id' => $mpd->meal_plan->id,
+                'meal_plan_name' => $mpd->meal_plan->name,
+                'day_name' => $mpd->day ? $mpd->day->name : 'Scheduled',
+                'total_entries' => $totalEntries,
+                'total_foods' => $totalFoods,
+                'total_kcal' => round($totalKcal),
+                'total_protein' => round($totalProtein, 1),
+                'entries' => $mpd->entry->map(function ($entry) {
+                    return [
+                        'id' => $entry->id,
+                        'meal_type' => $entry->meal_type ? $entry->meal_type->name : 'Meal',
+                        'foods' => $entry->foods->map(function ($ef) {
+                            return [
+                                'name' => $ef->food->name ?? 'Food Item',
+                                'energy_kcal' => $ef->food->energy_kcal ?? 0,
+                            ];
+                        }),
+                    ];
+                }),
+            ];
+        });
 
         // 6. Historical Vitals for Progress Tracking & Chart
         $weightVitalModel = Vital::where('slug', 'weight')->first();
@@ -341,46 +396,80 @@ class HomeController extends Controller
         $nextMonthCellsNeeded = ($totalCells % 7 === 0) ? 0 : 7 - ($totalCells % 7);
         $nextMonthDays = $nextMonthCellsNeeded > 0 ? range(1, $nextMonthCellsNeeded) : [];
 
-        return view('index', compact(
-            'user',
-            'workoutCount',
-            'mealPlanCount',
-            'exerciseCount',
-            'bodySectionsCount',
-            'weight',
-            'height',
-            'bmi',
-            'bmiCategory',
-            'bmiColor',
-            'bmiBadgeClass',
-            'bmiIsWarning',
-            'weightStatus',
-            'bpStatus',
-            'hrStatus',
-            'bfStatus',
-            'latestHeartRate',
-            'latestBpSystolic',
-            'latestBpDiastolic',
-            'latestBodyFat',
-            'minWeight',
-            'idealWeight',
-            'maxWeight',
-            'todayWorkoutDays',
-            'todayMealDays',
-            'chartLabels',
-            'chartWeightData',
-            'chartBmiData',
-            'weightChange',
-            'vitalsCount',
-            'userAge',
-            'maxHeartRate',
-            'bmr',
-            'calendarMonthName',
-            'calendarTodayDay',
-            'daysInMonth',
-            'prevMonthDays',
-            'nextMonthDays'
-        ));
+        // 8. Recent entities
+        $recentWorkouts = Workout::where('user_id', $userId)
+            ->with(['workout_day.day', 'workout_day.workout_exercise.exercise'])
+            ->orderBy('id', 'desc')
+            ->take(5)
+            ->get();
+
+        $recentVitals = $user->vitals()
+            ->with(['vital.unit'])
+            ->orderBy('date_measured', 'desc')
+            ->orderBy('id', 'desc')
+            ->take(6)
+            ->get();
+
+        $recentMealPlans = MealPlan::where('user_id', $userId)
+            ->with(['meal_plan_day.day', 'meal_plan_day.entry.meal_type'])
+            ->orderBy('id', 'desc')
+            ->take(5)
+            ->get();
+
+        return response()->json([
+            'user' => new UserResource($user),
+            'counts' => [
+                'workouts' => $workoutCount,
+                'meal_plans' => $mealPlanCount,
+                'exercises' => $exerciseCount,
+                'body_sections' => $bodySectionsCount,
+            ],
+            'vitals' => [
+                'weight' => $weight,
+                'height' => $height,
+                'heart_rate' => $latestHeartRate ? floatval($latestHeartRate->value) : null,
+                'bp_systolic' => $latestBpSystolic ? floatval($latestBpSystolic->value) : null,
+                'bp_diastolic' => $latestBpDiastolic ? floatval($latestBpDiastolic->value) : null,
+                'body_fat' => $latestBodyFat ? floatval($latestBodyFat->value) : null,
+            ],
+            'metrics' => [
+                'bmi' => $bmi,
+                'bmi_category' => $bmiCategory,
+                'bmi_color' => $bmiColor,
+                'bmi_badge_class' => $bmiBadgeClass,
+                'bmi_is_warning' => $bmiIsWarning,
+                'bmr' => $bmr,
+                'max_heart_rate' => $maxHeartRate,
+                'age' => $userAge,
+                'min_weight' => $minWeight,
+                'ideal_weight' => $idealWeight,
+                'max_weight' => $maxWeight,
+            ],
+            'statuses' => [
+                'weight' => $weightStatus,
+                'bp' => $bpStatus,
+                'hr' => $hrStatus,
+                'bf' => $bfStatus,
+            ],
+            'today_workouts' => $formattedTodayWorkouts,
+            'today_meals' => $formattedTodayMeals,
+            'vitals_chart' => [
+                'labels' => $chartLabels,
+                'weights' => $chartWeightData,
+                'bmis' => $chartBmiData,
+                'weight_change' => $weightChange,
+                'vitals_count' => $vitalsCount,
+            ],
+            'calendar' => [
+                'month_name' => $calendarMonthName,
+                'today_day' => $calendarTodayDay,
+                'days_in_month' => $daysInMonth,
+                'prev_month_days' => $prevMonthDays,
+                'next_month_days' => $nextMonthDays,
+            ],
+            'recent_workouts' => WorkoutResource::collection($recentWorkouts),
+            'recent_vitals' => UserVitalResource::collection($recentVitals),
+            'recent_meal_plans' => MealPlanResource::collection($recentMealPlans),
+        ]);
     }
 }
-

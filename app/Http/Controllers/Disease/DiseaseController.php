@@ -3,29 +3,51 @@
 namespace App\Http\Controllers\Disease;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\DiseaseResource;
 use App\Models\Disease\Disease;
+use App\Models\Disease\DiseaseRecommendation;
+use App\Models\Disease\EvidenceLevel;
+use App\Models\Disease\RecommendationType;
 use App\Models\Disease\Symptom;
 use App\Models\Disease\Treatment;
+use App\Models\Disease\TreatmentType;
 use App\Models\File\File;
 use App\Models\File\FileType;
+use App\Models\Food\Food;
+use App\Models\Workout\Workout;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class DiseaseController extends Controller
 {
     /**
-     * Display a simple listing of diseases.
-     *
-     * @param Request $request
-     * @return \Illuminate\View\View
+     * Provide reference lookups for diseases, symptoms, treatments, recommendation types, foods, and workouts.
      */
-    public function index(Request $request)
+    public function lookups(): JsonResponse
+    {
+        return response()->json([
+            'symptoms' => Symptom::orderBy('name')->get(['id', 'name', 'body_system']),
+            'treatments' => Treatment::with('treatment_type')->orderBy('name')->get(['id', 'name', 'slug', 'treatment_type_id']),
+            'treatment_types' => TreatmentType::withCount('treatments')->orderBy('name')->get(),
+            'evidence_levels' => EvidenceLevel::orderBy('name')->get(),
+            'recommendation_types' => RecommendationType::orderBy('id')->get(),
+            'foods' => Food::orderBy('name')->get(['id', 'name', 'energy_kcal']),
+            'workouts' => Workout::orderBy('name')->get(['id', 'name']),
+            'body_systems' => Symptom::whereNotNull('body_system')->where('body_system', '!=', '')->distinct()->orderBy('body_system')->pluck('body_system'),
+        ]);
+    }
+
+    /**
+     * Display a listing of diseases with search and pagination.
+     */
+    public function index(Request $request): JsonResponse
     {
         $query = Disease::with([
             'symptoms',
             'treatments.treatment_type',
-            'foods',
-            'exercises',
+            'recommendations.recommendation_type',
+            'recommendations.recommendable',
             'images',
         ]);
 
@@ -33,9 +55,7 @@ class DiseaseController extends Controller
             $search = trim($request->get('q'));
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('overview', 'like', "%{$search}%")
-                  ->orWhere('causes', 'like', "%{$search}%")
-                  ->orWhere('prevention', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
                   ->orWhereHas('symptoms', function ($sq) use ($search) {
                       $sq->where('name', 'like', "%{$search}%");
                   })
@@ -58,118 +78,86 @@ class DiseaseController extends Controller
                 break;
         }
 
-        $diseases = $query->paginate(12)->withQueryString();
+        $perPage = (int) $request->input('per_page', 12);
+        $diseases = $query->paginate($perPage);
 
-        $totalDiseasesCount = Disease::count();
-        $totalTreatmentsCount = Treatment::count();
-        $totalSymptomsCount = Symptom::count();
-
-        return view('disease.index', compact(
-            'diseases',
-            'totalDiseasesCount',
-            'totalTreatmentsCount',
-            'totalSymptomsCount'
-        ));
+        return response()->json([
+            'records' => DiseaseResource::collection($diseases),
+            'stats' => [
+                'total_diseases' => Disease::count(),
+                'total_treatments' => Treatment::count(),
+                'total_symptoms' => Symptom::count(),
+            ],
+            'pagination' => [
+                'current_page' => $diseases->currentPage(),
+                'last_page'    => $diseases->lastPage(),
+                'per_page'     => $diseases->perPage(),
+                'total'        => $diseases->total(),
+            ]
+        ]);
     }
 
     /**
-     * Display detailed disease profile.
-     *
-     * @param string|int $slugOrId
-     * @return \Illuminate\View\View
+     * Display the specified disease details.
      */
-    public function show($slugOrId)
+    public function show($slugOrId): JsonResponse
     {
         $disease = Disease::where('slug', $slugOrId)
             ->orWhere('id', $slugOrId)
             ->with([
                 'symptoms',
                 'treatments.treatment_type',
-                'foods',
-                'exercises',
+                'recommendations.recommendation_type',
+                'recommendations.recommendable',
                 'images',
             ])
             ->firstOrFail();
 
-        // Primary cures vs other helpful treatments
-        $primaryCures = $disease->treatments->where('pivot.is_primary_cure', true);
-        $otherTreatments = $disease->treatments->where('pivot.is_primary_cure', false);
-
-        // Foods
-        $helpfulFoods = $disease->foods->filter(fn($f) => in_array($f->pivot->recommendation_type, ['recommended', 'therapeutic']));
-        $avoidFoods = $disease->foods->filter(fn($f) => in_array($f->pivot->recommendation_type, ['avoid', 'limit', 'restrict']));
-
-        // Exercises
-        $helpfulExercises = $disease->exercises->filter(fn($e) => in_array($e->pivot->safety_type, ['recommended', 'rehabilitative']));
-        $avoidExercises = $disease->exercises->filter(fn($e) => in_array($e->pivot->safety_type, ['caution', 'contraindicated', 'avoid']));
-
-        return view('disease.show', compact(
-            'disease',
-            'primaryCures',
-            'otherTreatments',
-            'helpfulFoods',
-            'avoidFoods',
-            'helpfulExercises',
-            'avoidExercises'
-        ));
-    }
-
-    /**
-     * Show form to add a new disease.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function create()
-    {
-        $symptoms = Symptom::orderBy('name', 'asc')->get();
-        $treatments = Treatment::with('treatment_type')->orderBy('name', 'asc')->get();
-
-        return view('disease.create', compact('symptoms', 'treatments'));
+        return response()->json([
+            'disease' => new DiseaseResource($disease),
+        ]);
     }
 
     /**
      * Store a newly created disease.
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        if ($request->has('treatments') && is_array($request->input('treatments'))) {
-            $filteredTreatments = array_values(array_filter($request->input('treatments'), function ($item) {
-                return is_array($item) && !empty($item['id']);
-            }));
-            $request->merge(['treatments' => $filteredTreatments]);
-        }
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'overview' => 'nullable|string',
-            'causes' => 'nullable|string',
-            'prevention' => 'nullable|string',
+            'description' => 'nullable|string',
             'symptoms' => 'nullable|array',
-            'symptoms.*' => 'exists:symptom,id',
             'treatments' => 'nullable|array',
             'treatments.*.id' => 'required|exists:treatment,id',
             'treatments.*.is_primary_cure' => 'nullable|boolean',
             'treatments.*.instructions' => 'nullable|string|max:1000',
+            'recommendations' => 'nullable|array',
+            'image_id' => 'nullable|integer',
             'image' => 'nullable|image|max:8192',
         ]);
 
         $disease = Disease::create([
             'name' => $validated['name'],
             'slug' => Str::slug($validated['name']),
-            'overview' => $validated['overview'] ?? null,
-            'causes' => $validated['causes'] ?? null,
-            'prevention' => $validated['prevention'] ?? null,
+            'description' => $validated['description'] ?? null,
         ]);
 
-        // Attach symptoms
         if ($request->filled('symptoms')) {
-            $disease->symptoms()->sync($request->input('symptoms'));
+            $symptomSync = [];
+            foreach ($request->input('symptoms') as $s) {
+                if (is_array($s) && !empty($s['id'])) {
+                    $symptomSync[$s['id']] = [
+                        'is_primary' => !empty($s['is_primary']) ? 1 : 0,
+                        'frequency' => $s['frequency'] ?? null,
+                        'notes' => $s['notes'] ?? null,
+                    ];
+                } elseif (is_numeric($s)) {
+                    $symptomSync[$s] = [];
+                }
+            }
+            $disease->symptoms()->sync($symptomSync);
         }
 
-        // Attach treatments
         if ($request->has('treatments') && is_array($request->input('treatments'))) {
             $treatmentSync = [];
             foreach ($request->input('treatments') as $item) {
@@ -184,81 +172,79 @@ class DiseaseController extends Controller
             $disease->treatments()->sync($treatmentSync);
         }
 
-        // Upload image if provided
-        if ($request->hasFile('image')) {
+        $this->syncRecommendations($disease, $request->input('recommendations', []));
+
+        if ($request->filled('image_id')) {
+            $mediaFile = File::find($request->input('image_id'));
+            if ($mediaFile) {
+                $mediaFile->fileable()->associate($disease);
+                $mediaFile->save();
+            }
+        } elseif ($request->hasFile('image')) {
             $imageType = FileType::where('name', 'Image')->first();
             if ($imageType) {
                 File::upload($disease, $request->file('image'), $imageType);
             }
         }
 
-        return redirect()->route('disease.show', $disease->slug)
-            ->with('success', 'Condition successfully documented.');
-    }
+        $disease->load([
+            'symptoms',
+            'treatments.treatment_type',
+            'recommendations.recommendation_type',
+            'recommendations.recommendable',
+            'images',
+        ]);
 
-    /**
-     * Show form to edit disease.
-     *
-     * @param int|string $id
-     * @return \Illuminate\View\View
-     */
-    public function edit($id)
-    {
-        $disease = Disease::where('slug', $id)->orWhere('id', $id)
-            ->with(['symptoms', 'treatments'])
-            ->firstOrFail();
-
-        $symptoms = Symptom::orderBy('name', 'asc')->get();
-        $treatments = Treatment::with('treatment_type')->orderBy('name', 'asc')->get();
-
-        return view('disease.edit', compact('disease', 'symptoms', 'treatments'));
+        return response()->json([
+            'message' => 'Condition created successfully.',
+            'disease' => new DiseaseResource($disease),
+        ], 201);
     }
 
     /**
      * Update the specified disease.
-     *
-     * @param Request $request
-     * @param int|string $id
-     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
         $disease = Disease::where('slug', $id)->orWhere('id', $id)->firstOrFail();
 
-        if ($request->has('treatments') && is_array($request->input('treatments'))) {
-            $filteredTreatments = array_values(array_filter($request->input('treatments'), function ($item) {
-                return is_array($item) && !empty($item['id']);
-            }));
-            $request->merge(['treatments' => $filteredTreatments]);
-        }
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'overview' => 'nullable|string',
-            'causes' => 'nullable|string',
-            'prevention' => 'nullable|string',
+            'description' => 'nullable|string',
             'symptoms' => 'nullable|array',
-            'symptoms.*' => 'exists:symptom,id',
             'treatments' => 'nullable|array',
             'treatments.*.id' => 'required|exists:treatment,id',
             'treatments.*.is_primary_cure' => 'nullable|boolean',
             'treatments.*.instructions' => 'nullable|string|max:1000',
+            'recommendations' => 'nullable|array',
+            'image_id' => 'nullable|integer',
             'image' => 'nullable|image|max:8192',
         ]);
 
         $disease->update([
             'name' => $validated['name'],
-            'overview' => $validated['overview'] ?? null,
-            'causes' => $validated['causes'] ?? null,
-            'prevention' => $validated['prevention'] ?? null,
+            'slug' => Str::slug($validated['name']),
+            'description' => $validated['description'] ?? null,
         ]);
 
-        // Sync symptoms
-        $disease->symptoms()->sync($request->input('symptoms', []));
+        if ($request->has('symptoms')) {
+            $symptomSync = [];
+            foreach ($request->input('symptoms') ?: [] as $s) {
+                if (is_array($s) && !empty($s['id'])) {
+                    $symptomSync[$s['id']] = [
+                        'is_primary' => !empty($s['is_primary']) ? 1 : 0,
+                        'frequency' => $s['frequency'] ?? null,
+                        'notes' => $s['notes'] ?? null,
+                    ];
+                } elseif (is_numeric($s)) {
+                    $symptomSync[$s] = [];
+                }
+            }
+            $disease->symptoms()->sync($symptomSync);
+        }
 
-        // Sync treatments
-        $treatmentSync = [];
         if ($request->has('treatments') && is_array($request->input('treatments'))) {
+            $treatmentSync = [];
             foreach ($request->input('treatments') as $item) {
                 if (!empty($item['id'])) {
                     $treatmentSync[$item['id']] = [
@@ -268,29 +254,57 @@ class DiseaseController extends Controller
                     ];
                 }
             }
+            $disease->treatments()->sync($treatmentSync);
         }
-        $disease->treatments()->sync($treatmentSync);
 
-        // Upload image if provided
-        if ($request->hasFile('image')) {
+        if ($request->has('recommendations')) {
+            $this->syncRecommendations($disease, $request->input('recommendations', []));
+        }
+
+        if ($request->filled('image_id')) {
+            $mediaFile = File::find($request->input('image_id'));
+            if ($mediaFile) {
+                $mediaFile->fileable()->associate($disease);
+                $mediaFile->save();
+            }
+        } elseif ($request->hasFile('image')) {
             $imageType = FileType::where('name', 'Image')->first();
             if ($imageType) {
                 File::upload($disease, $request->file('image'), $imageType);
             }
         }
 
-        return redirect()->route('disease.show', $disease->slug)
-            ->with('success', 'Condition details updated.');
+        $disease->load([
+            'symptoms',
+            'treatments.treatment_type',
+            'recommendations.recommendation_type',
+            'recommendations.recommendable',
+            'images',
+        ]);
+
+        return response()->json([
+            'message' => 'Condition updated successfully.',
+            'disease' => new DiseaseResource($disease),
+        ]);
     }
 
     /**
-     * Upload an image attachment.
-     *
-     * @param Request $request
-     * @param int|string $id
-     * @return \Illuminate\Http\RedirectResponse
+     * Remove the specified disease.
      */
-    public function uploadImage(Request $request, $id)
+    public function destroy($id): JsonResponse
+    {
+        $disease = Disease::where('slug', $id)->orWhere('id', $id)->firstOrFail();
+        $disease->delete();
+
+        return response()->json([
+            'message' => 'Condition deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Upload image for disease.
+     */
+    public function uploadImage(Request $request, $id): JsonResponse
     {
         $disease = Disease::where('slug', $id)->orWhere('id', $id)->firstOrFail();
 
@@ -298,25 +312,38 @@ class DiseaseController extends Controller
             'image' => 'required|image|max:8192',
         ]);
 
-        $imageType = FileType::where('name', 'Image')->firstOrFail();
-        File::upload($disease, $request->file('image'), $imageType);
+        $imageType = FileType::where('name', 'Image')->first();
+        if ($imageType) {
+            File::upload($disease, $request->file('image'), $imageType);
+        }
 
-        return redirect()->route('disease.show', $disease->slug)
-            ->with('success', 'Image successfully added.');
+        return response()->json([
+            'message' => 'Image uploaded successfully.',
+        ]);
     }
 
     /**
-     * Remove the disease.
-     *
-     * @param int|string $id
-     * @return \Illuminate\Http\RedirectResponse
+     * Helper to synchronize polymorphic recommendations.
      */
-    public function destroy($id)
+    private function syncRecommendations(Disease $disease, array $recommendations): void
     {
-        $disease = Disease::where('slug', $id)->orWhere('id', $id)->firstOrFail();
-        $disease->delete();
+        $disease->recommendations()->delete();
 
-        return redirect()->route('disease.index')
-            ->with('success', 'Condition deleted.');
+        foreach ($recommendations as $rec) {
+            $type = $rec['recommendable_type'] ?? null;
+            $id = $rec['recommendable_id'] ?? null;
+            $typeId = $rec['recommendation_type_id'] ?? 1;
+
+            if ($type && $id) {
+                DiseaseRecommendation::create([
+                    'disease_id' => $disease->id,
+                    'recommendation_type_id' => $typeId,
+                    'recommendable_type' => $type,
+                    'recommendable_id' => $id,
+                    'rationale' => $rec['rationale'] ?? null,
+                    'instructions' => $rec['instructions'] ?? null,
+                ]);
+            }
+        }
     }
 }

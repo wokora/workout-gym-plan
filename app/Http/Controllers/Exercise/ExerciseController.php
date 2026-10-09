@@ -3,130 +3,135 @@
 namespace App\Http\Controllers\Exercise;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ExerciseResource;
 use App\Models\Exercise\Exercise;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class ExerciseController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display a listing of exercises with search and pagination.
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        return view('exercise.index');
-    }
+        $query = Exercise::with('body_section.body_section');
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('exercise.create');
-    }
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+        }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        Validator::make($request->all(),
-            [
-                'name' => 'required|unique:exercise,name',
-                'description' => 'nullable|max:255'
+        if ($request->filled('muscle')) {
+            $muscle = $request->input('muscle');
+            $query->whereHas('body_section.body_section', function ($q) use ($muscle) {
+                $q->where('name', $muscle);
+            });
+        }
+
+        $perPage = (int) $request->input('per_page', 20);
+        $exercises = $query->orderBy('name')->paginate($perPage);
+
+        return response()->json([
+            'records' => ExerciseResource::collection($exercises),
+            'pagination' => [
+                'current_page' => $exercises->currentPage(),
+                'last_page'    => $exercises->lastPage(),
+                'per_page'     => $exercises->perPage(),
+                'total'        => $exercises->total(),
             ]
-        )->validate();
+        ]);
+    }
 
-        $exercise = new Exercise();
-        $exercise->name = $request->name;
-        $exercise->description = $request->description;
-        $exercise->save();
+    /**
+     * Store a newly created exercise in storage.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:exercise,name',
+            'description' => 'nullable|string',
+            'body_sections' => 'nullable|array',
+            'body_sections.*' => 'exists:body_section,id',
+        ]);
 
-        if($request->body) {
-            foreach ($request->body as $body) {
+        $exercise = Exercise::create([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
 
+        if ($request->has('body_sections')) {
+            foreach ($request->body_sections as $bodyId) {
                 $exercise->body_section()->create([
-                    'body_section_id' => $body
+                    'body_section_id' => $bodyId,
                 ]);
             }
         }
 
-        return redirect()->route('exercise.show', $exercise->id)->with('success', 'Exercise Created');
+        $exercise->load('body_section.body_section');
+
+        return response()->json([
+            'message' => 'Exercise created successfully.',
+            'exercise' => new ExerciseResource($exercise),
+        ], 201);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Exercise\Exercise  $exercise
-     * @return \Illuminate\Http\Response
+     * Display the specified exercise.
      */
-    public function show(Exercise $exercise)
+    public function show($id): JsonResponse
     {
-        return view('exercise.view', ['exercise' => $exercise]);
+        $exercise = Exercise::with(['body_section.body_section', 'diseases'])->findOrFail($id);
+
+        return response()->json([
+            'exercise' => new ExerciseResource($exercise),
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Exercise\Exercise  $exercise
-     * @return \Illuminate\Http\Response
+     * Update the specified exercise in storage.
      */
-    public function edit(Exercise $exercise)
+    public function update(Request $request, $id): JsonResponse
     {
-        return view('exercise.edit', ['exercise' => $exercise]);
-    }
+        $exercise = Exercise::findOrFail($id);
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Exercise\Exercise  $exercise
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Exercise $exercise)
-    {
-        Validator::make($request->all(),
-            [
-                'name' => 'required|unique:exercise,name,'.$exercise->id,
-                'description' => 'nullable|max:255'
-            ]
-        )->validate();
+        $request->validate([
+            'name' => 'required|string|max:255|unique:exercise,name,' . $id,
+            'description' => 'nullable|string',
+            'body_sections' => 'nullable|array',
+            'body_sections.*' => 'exists:body_section,id',
+        ]);
 
-        $exercise->name = $request->name;
-        $exercise->description = $request->description;
-        $exercise->save();
+        $exercise->update($request->only('name', 'description'));
 
-        $exercise->body_section()->delete();
-
-        if($request->body) {
-            foreach ($request->body as $body) {
-
+        if ($request->has('body_sections')) {
+            $exercise->body_section()->delete();
+            foreach ($request->body_sections as $bodyId) {
                 $exercise->body_section()->create([
-                    'body_section_id' => $body
+                    'body_section_id' => $bodyId,
                 ]);
             }
         }
 
-        return redirect()->route('exercise.show', $exercise->id)->with('success', 'Exercise Updated');
+        $exercise->load('body_section.body_section');
+
+        return response()->json([
+            'message' => 'Exercise updated successfully.',
+            'exercise' => new ExerciseResource($exercise),
+        ]);
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Exercise\Exercise  $exercise
-     * @return \Illuminate\Http\Response
+     * Remove the specified exercise from storage.
      */
-    public function destroy(Exercise $exercise)
+    public function destroy($id): JsonResponse
     {
+        $exercise = Exercise::findOrFail($id);
         $exercise->delete();
 
-        return redirect()->route('exercise.index')->with('success', 'Exercise Deleted');
+        return response()->json([
+            'message' => 'Exercise deleted successfully.',
+        ]);
     }
 }

@@ -15,10 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->longText('overview')->nullable();
-            $table->longText('causes')->nullable();
-            $table->longText('risk_factors')->nullable();
-            $table->longText('prevention')->nullable();
+            $table->longText('description')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

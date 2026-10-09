@@ -40,4 +40,11 @@ class Workout extends Model
             ->values()
             ->all();
     }
+
+    public function diseases(): \Illuminate\Database\Eloquent\Relations\MorphToMany
+    {
+        return $this->morphToMany(\App\Models\Disease\Disease::class, 'recommendable', 'disease_recommendation')
+            ->withPivot('id', 'recommendation_type_id', 'rationale', 'instructions')
+            ->withTimestamps();
+    }
 }
