@@ -34,4 +34,11 @@ class Exercise extends Model
             ->values()
             ->all();
     }
+
+    public function diseases()
+    {
+        return $this->belongsToMany(\App\Models\Disease\Disease::class, 'disease_exercise', 'exercise_id', 'disease_id')
+            ->withPivot('id', 'safety_type', 'instructions', 'modifications')
+            ->withTimestamps();
+    }
 }

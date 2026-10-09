@@ -33,6 +33,11 @@ class SidebarComposer
                 case 'vital':
                     $view->with('sidebarMenu', SidebarPanel::vitals());
                     break;
+                case 'disease':
+                case 'treatment':
+                case 'symptom':
+                    $view->with('sidebarMenu', SidebarPanel::diseases());
+                    break;
                 default:
                     $view->with('sidebarMenu', SidebarPanel::dashboard());
             }

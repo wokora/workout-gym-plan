@@ -38,5 +38,14 @@ Route::middleware(['auth', 'sso.verify'])->group(function(){
     Route::get('food/search', [\App\Http\Controllers\Food\FoodController::class, 'search'])->name('food.search');
     Route::get('foods', [\App\Http\Controllers\Food\FoodController::class, 'index'])->name('food.index');
     Route::get('foods/{id}', [\App\Http\Controllers\Food\FoodController::class, 'show'])->name('food.show');
+
+    // Diseases, Cures, Treatments & Symptoms
+    Route::resource('disease', \App\Http\Controllers\Disease\DiseaseController::class);
+    Route::post('disease/{id}/image', [\App\Http\Controllers\Disease\DiseaseController::class, 'uploadImage'])->name('disease.image.upload');
+    Route::resource('treatment', \App\Http\Controllers\Disease\TreatmentController::class);
+    Route::post('treatment/{id}/image', [\App\Http\Controllers\Disease\TreatmentController::class, 'uploadImage'])->name('treatment.image.upload');
+    Route::resource('symptom', \App\Http\Controllers\Disease\SymptomController::class);
+    Route::get('symptoms', [\App\Http\Controllers\Disease\SymptomController::class, 'index']);
 });
+
 

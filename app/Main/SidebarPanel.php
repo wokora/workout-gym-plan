@@ -90,6 +90,29 @@ class SidebarPanel
         ];
     }
 
+    public static function diseases()
+    {
+        return [
+            'title' => 'Diseases & Cures',
+            'items' => [
+                [
+                    'disease_index' => [
+                        'title' => 'Diseases Database',
+                        'route_name' => 'disease.index',
+                    ],
+                    'treatment_index' => [
+                        'title' => 'Treatments & Cures',
+                        'route_name' => 'treatment.index',
+                    ],
+                    'symptom_index' => [
+                        'title' => 'Symptom Directory',
+                        'route_name' => 'symptom.index',
+                    ],
+                ],
+            ],
+        ];
+    }
+
     public static function all()
     {
         return [
@@ -97,6 +120,7 @@ class SidebarPanel
             self::workouts(),
             self::meals(),
             self::vitals(),
+            self::diseases(),
         ];
     }
 }

@@ -21,4 +21,12 @@ class Food extends Model
     {
         return $this->belongsToMany(Category::class, 'food_category', 'food_id', 'category_id');
     }
+
+    public function diseases()
+    {
+        return $this->belongsToMany(\App\Models\Disease\Disease::class, 'disease_food', 'food_id', 'disease_id')
+            ->withPivot('id', 'recommendation_type', 'rationale', 'serving_notes')
+            ->withTimestamps();
+    }
 }
+

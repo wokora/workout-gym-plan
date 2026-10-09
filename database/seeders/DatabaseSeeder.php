@@ -21,5 +21,13 @@ class DatabaseSeeder extends Seeder
         $this->call( VitalUnitSeeder::class );
         $this->call( InputTypeSeeder::class );
         $this->call( VitalSeeder::class );
+        $this->call( FileTypeTableSeeder::class );
+        $this->call( FileStatusTableSeeder::class );
+        $this->call( FileDimensionTableSeeder::class );
+        $this->call( DiseaseCategoryTableSeeder::class );
+        $this->call( TreatmentTypeTableSeeder::class );
+        $this->call( EvidenceLevelTableSeeder::class );
+        $this->call( SymptomTableSeeder::class );
+        $this->call( ClinicalDiseaseAndTreatmentSeeder::class );
     }
 }
